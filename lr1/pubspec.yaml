@@ -16,3 +16,4 @@ dev_dependencies:
 dependencies: 
   collection: ^1.15.0
   list_ext: ^1.0.4
+  xrange: ^2.0.0
