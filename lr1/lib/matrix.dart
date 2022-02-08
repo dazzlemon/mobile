@@ -42,7 +42,7 @@ String matrixToString<T>(List<List<T>> matrix, {
   String rowToString(Iterable<String> row)
     => rowPrefix
     +   row.map(alignedElement)
-              .join(elementDelimiter)
+           .join(elementDelimiter)
     +   rowSuffix;
 
   return stringElements
