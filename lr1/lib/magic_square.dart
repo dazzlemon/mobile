@@ -1,29 +1,32 @@
 import 'package:collection/collection.dart';
 import 'package:xrange/xrange.dart';
+import 'package:list_ext/list_ext.dart' hide IntIterableExtensions;
+import 'package:lr1/matrix.dart';
+import 'package:lr1/permutations.dart';
 
-List<List<T>> transpose<T>(List<List<T>> matrix) {
+Matrix<T> transpose<T>(Matrix<T> matrix) {
 	if (matrix.isEmpty) {
 		return matrix;
 	}
 	if (matrix.any((row) => row.length != matrix.length)) {
 		throw StateError('Not a matrix');
 	}
-	if (matrix[0].isEmpty) {
+	if (matrix.first.isEmpty) {
 		throw StateError('Degenerate matrix');
 	}
 	int nRows = matrix.length;
-	int nCols = matrix[0].length;
+	int nCols = matrix.first.length;
 
 	return List.generate(
 		nCols,
 		(i) => List.generate(
 			nRows, 
-			(j) => matrix[j][i]
+			(j) => matrix.elementAt(j).elementAt(i)
 		)
 	);
 }
 
-bool isMagicSquare(List<List<int>> matrix) {
+bool isMagicSquare(Matrix<int> matrix) {
 	if (matrix.length == 2
 		|| matrix.any((row) => row.length != matrix.length)
 	) {
@@ -38,11 +41,16 @@ bool isMagicSquare(List<List<int>> matrix) {
 		|| transpose(matrix).any((col) => col.sum != magicConst)
 		// check main diag
 		|| integers(0, matrix.length)
-			.map((i) => matrix[i][i])
+			.map((i) => matrix.elementAt(i).elementAt(i))
 			.sum != magicConst
 		// check secondaryDiag
 		|| integers(0, matrix.length)
-			.map((i) => matrix[i][matrix.length - 1 - i])
+			.map((i) => matrix.elementAt(i).elementAt(matrix.length - 1 - i))
 			.sum != magicConst
 	);
 }
+
+Iterable<Matrix<int>> magicSquares(int size) =>
+	permutations(size * size)
+		.map((p) => p.chunks(size).toList())
+		.where(isMagicSquare);
