@@ -55,7 +55,7 @@ class MagicSquaresState extends State<MagicSquares> {
 					} else if (snapshot.hasData) {
 						return Container(
 							color: Colors.blueGrey.shade100,
-							child: ListView.separated(
+							child: snapshot.data!.isEmpty ? Text('No magic squares of size $size') : ListView.separated(
 								itemCount: snapshot.data!.length,
 								separatorBuilder: (_, __) => const SizedBox(
 									height: 16,
@@ -64,28 +64,15 @@ class MagicSquaresState extends State<MagicSquares> {
 							)
 						);
           } else {
-            return const SizedBox(
-							width: double.infinity,
-							child: CircularProgressIndicator(color: Colors.pinkAccent),
+            return const AspectRatio(
+						  aspectRatio: 1,
+						  child: CircularProgressIndicator(color: Colors.pinkAccent)
 						);
           }
 				},
 			),
-			// Container(
-				// color: Colors.blueGrey.shade100,
-				// child: ListView.separated(
-					// itemCount: magicSquaresList.length,
-					// separatorBuilder: (_, __) => const SizedBox(
-						// height: 16,
-					// ),
-					// itemBuilder: (_, int i) => MatrixView(magicSquaresList[i]),
-				// )
-			// ),
-			floatingActionButton: IntSelect(1, 4, size, onChange: (i) => setState(() {
-				size = i;
-			}))
+			floatingActionButton: IntSelect(1, 4, size, onChange: (i) => setState(() => size = i))
 		);
-
 	}
 }
 
@@ -121,7 +108,7 @@ class IntSelectState extends State<IntSelect> {
       ),
       onChanged: (int? newValue) {
         setState(() {
-					if (newValue != null) {
+					if (newValue != null && newValue != selected) {
           	selected = newValue;
 						widget.onChange?.call(newValue);
 					}
