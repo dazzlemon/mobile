@@ -37,6 +37,9 @@ dependencies:
   collection: ^1.15.0
   xrange: ^2.0.0
   list_ext: ^1.0.4
+  threading: ^0.0.10
+  async_task: ^1.0.16
+  worker_manager: ^4.2.5
 
 dev_dependencies:
   flutter_test:

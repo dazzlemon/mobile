@@ -32,6 +32,7 @@ bool isMagicSquare(Matrix<int> matrix) {
 	) {
 		return false;
 	}
+	// print('testing' + matrix.toString());
 
 	var magicConst = matrix.length * (matrix.length * matrix.length + 1) / 2;
 	return !(
