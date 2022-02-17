@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'magic_square.dart';
 import 'matrix.dart';
@@ -19,7 +21,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
 			home: const MagicSquares()
-    );
+		);
 }
 
 class MagicSquares extends StatefulWidget {
@@ -40,36 +42,47 @@ class MagicSquaresState extends State<MagicSquares> {
 		task?.cancel();
 		task = Executor().execute(fun1: magicSquaresList, arg1: size);
 		return Scaffold(
-			body: FutureBuilder<List<Matrix<int>>>(
-				future: task,
-				// future: compute(magicSquaresList, size),
-				builder: (BuildContext context, AsyncSnapshot<List<Matrix<int>>> snapshot) {
-					if (snapshot.connectionState == ConnectionState.waiting) {
-						return const AspectRatio(
-						  aspectRatio: 1,
-						  child: CircularProgressIndicator(color: Colors.pinkAccent)
-						);
-					}
-					if (snapshot.hasError) {
-						return const Text('There was an error :(');
-					} else if (snapshot.hasData) {
-						return Container(
-							color: Colors.blueGrey.shade100,
-							child: snapshot.data!.isEmpty ? Text('No magic squares of size $size') : ListView.separated(
-								itemCount: snapshot.data!.length,
-								separatorBuilder: (_, __) => const SizedBox(
-									height: 16,
-								),
-								itemBuilder: (_, int i) => MatrixView(snapshot.data![i]),
-							)
-						);
-          } else {
-            return const AspectRatio(
-						  aspectRatio: 1,
-						  child: CircularProgressIndicator(color: Colors.pinkAccent)
-						);
-          }
-				},
+			body: Container(
+				decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/bg.jpg"),
+            fit: BoxFit.cover,
+          ),
+        ),
+				child: SafeArea(
+					child: FutureBuilder<List<Matrix<int>>>(
+						future: task,
+						// future: compute(magicSquaresList, size),
+						builder: (BuildContext context, AsyncSnapshot<List<Matrix<int>>> snapshot) {
+							if (snapshot.connectionState == ConnectionState.waiting) {
+								return const AspectRatio(
+									aspectRatio: 1,
+									child: CircularProgressIndicator(color: Colors.pinkAccent)
+								);
+							}
+							if (snapshot.hasError) {
+								return const Text('There was an error :(');
+							} else if (snapshot.hasData) {
+								return Container(
+									padding: const EdgeInsets.only(left: 32, right: 32),
+									// color: Colors.blueGrey.shade100,
+									child: snapshot.data!.isEmpty ? Text('No magic squares of size $size') : ListView.separated(
+										itemCount: snapshot.data!.length,
+										separatorBuilder: (_, __) => const SizedBox(
+											height: 32,
+										),
+										itemBuilder: (_, int i) => MatrixView(snapshot.data![i]),
+									)
+								);
+							} else {
+								return const AspectRatio(
+									aspectRatio: 1,
+									child: CircularProgressIndicator(color: Colors.pinkAccent)
+								);
+							}
+						},
+					)
+				)
 			),
 			floatingActionButton: IntSelect(1, 4, size, onChange: (i) => setState(() => size = i))
 		);
@@ -125,36 +138,83 @@ class IntSelectState extends State<IntSelect> {
   }
 }
 
+const EdgeInsetsGeometry kPadding = EdgeInsets.all(5);
+const BorderRadius kBorderRadius = BorderRadius.all(Radius.circular(5));
+
+class BlurryContainer extends StatelessWidget {
+  final Widget child;
+  final double blur;
+  final double? height, width;
+  final EdgeInsetsGeometry padding;
+  final Color bgColor;
+
+  final BorderRadius borderRadius;
+
+  //final double colorOpacity;
+
+  const BlurryContainer({
+    Key? key,
+    required this.child,
+    this.blur = 5,
+    required this.height,
+    required this.width,
+    this.padding = kPadding,
+    this.bgColor = Colors.transparent,
+    this.borderRadius = kBorderRadius,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: borderRadius,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+        child: Container(
+          height: height!,
+          width: width!,
+          padding: padding,
+          color: bgColor,
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
 class MatrixView<T> extends StatelessWidget {
 	final Matrix<T> matrix;
 	const MatrixView(this.matrix, {Key? key}) : super(key: key);
 
 	@override
 	Widget build(BuildContext context) =>
-		Material(
-			type: MaterialType.transparency,
+		BlurryContainer(
+			height: 64.0 * matrix.length,
+			width: 60,
+			bgColor: Colors.black.withOpacity(0.4),
+			borderRadius: BorderRadius.circular(5),
 			child: Table(
 				children: matrix.map((row) =>
 					TableRow(
 						children: row.map((e) => TableCell(
 							verticalAlignment: TableCellVerticalAlignment.middle,
 							child: Container(
+								height: 64,
 								child: Text(
 									e.toString(),
 									style: const TextStyle(
-										color: Colors.black87
+										color: Colors.white70
 									)
 								),
-								color: Colors.white,
-								alignment: Alignment.center
+								// color: Colors.white,
+								alignment: Alignment.center,
 							)
 						)).toList()
 					)
 				).toList(),
 				border: TableBorder.symmetric(
-						inside: BorderSide(width: 1, color: Colors.grey.shade800),
+						inside: const BorderSide(width: 1, color: Colors.white30),
 						outside: BorderSide.none
 				),
-			)
+				)
 		);
 }
