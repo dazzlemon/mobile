@@ -76,10 +76,25 @@ class MagicSquaresState extends State<MagicSquares> {
 									return const Text('There was an error :(');
 								} else if (snapshot.hasData) {
 									return Container(
+										alignment: Alignment.center,
 										padding: const EdgeInsets.only(left: 32, right: 32),
 										// color: Colors.blueGrey.shade100,
-										child: snapshot.data!.isEmpty ? Text('No magic squares of size $size')
-																									: magicSquaresListView(snapshot.data!)
+										child: snapshot.data!.isNotEmpty ? magicSquaresListView(snapshot.data!)
+										                                 : BlurryContainer(
+											height: 64.0,
+											width: double.infinity,
+											bgColor: Colors.black.withOpacity(0.4),
+											child: Container(
+												alignment: Alignment.center,
+												child: Text(
+													'No magic squares of size $size',
+													style: const TextStyle(
+														color: Colors.white70,
+													),
+													textAlign: TextAlign.center,
+												)
+											)
+										)
 									);
 								} else {
 									return const AspectRatio(
@@ -152,13 +167,11 @@ const BorderRadius kBorderRadius = BorderRadius.all(Radius.circular(20));
 class BlurryContainer extends StatelessWidget {
   final Widget child;
   final double blur;
-  final double? height, width;
+  final double height, width;
   final EdgeInsetsGeometry padding;
   final Color bgColor;
 
   final BorderRadius borderRadius;
-
-  //final double colorOpacity;
 
   const BlurryContainer({
     Key? key,
@@ -172,21 +185,20 @@ class BlurryContainer extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
+  Widget build(BuildContext context) =>
+    ClipRRect(
       borderRadius: borderRadius,
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
         child: Container(
-          height: height!,
-          width: width!,
+          height: height,
+          width: width,
           padding: padding,
           color: bgColor,
           child: child,
         ),
       ),
     );
-  }
 }
 
 class MatrixView<T> extends StatelessWidget {
