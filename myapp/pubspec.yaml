@@ -1,5 +1,5 @@
-name: myapp
-description: A new Flutter project.
+name: magic_squares
+description: Magic Squares.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -41,6 +41,8 @@ dependencies:
   async_task: ^1.0.16
   worker_manager: ^4.2.5
   blurrycontainer: ^0.1.0
+  flutter_launcher_name: ^0.0.1
+  flutter_launcher_icons: ^0.8.1
 
 dev_dependencies:
   flutter_test:
@@ -55,6 +57,14 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+
+flutter_launcher_name:
+  name: "Magic Squares"
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon.jpg"
 
 # The following section is specific to Flutter.
 flutter:
