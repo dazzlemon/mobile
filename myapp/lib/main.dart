@@ -5,6 +5,7 @@ import 'magic_square.dart';
 import 'matrix.dart';
 import 'package:xrange/xrange.dart';
 import 'package:worker_manager/worker_manager.dart';
+import 'package:shimmer/shimmer.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,7 +39,14 @@ magicSquaresListView(List<Matrix<int>> magicSquares) =>
 		itemCount: magicSquares.length + 2,// one item in front and one at end
 		separatorBuilder: (_, __) => const SizedBox(height: 32),
 		itemBuilder: (_, int i) => i == 0 || i == magicSquares.length + 1 ? Container()
-		                                                                  : MatrixView(magicSquares[i - 1])
+		                                                                  : Row(
+			children: [SizedBox(
+				child: MatrixView(magicSquares[i - 1]),
+				height: magicSquares.length == 1 ? 64 : 32.0 * magicSquares.length,
+				width:  magicSquares.length == 1 ? 64 : 32.0 * magicSquares.length,
+			)],
+			mainAxisAlignment: MainAxisAlignment.center
+		)
 	);
 
 class MagicSquaresState extends State<MagicSquares> {
@@ -67,9 +75,32 @@ class MagicSquaresState extends State<MagicSquares> {
 							// future: compute(magicSquaresList, size),
 							builder: (BuildContext context, AsyncSnapshot<List<Matrix<int>>> snapshot) {
 								if (snapshot.connectionState == ConnectionState.waiting) {
-									return const AspectRatio(
-										aspectRatio: 1,
-										child: CircularProgressIndicator(color: Colors.pinkAccent)
+									return Container(
+										alignment: Alignment.topCenter,
+										padding: const EdgeInsets.only(top: 32, left: 32, right: 32),
+										child: AspectRatio(
+											aspectRatio: 1,
+											child: BlurryContainer(
+												height: 64.0,
+												width: double.infinity,
+												child: Shimmer.fromColors(
+													period: const Duration(milliseconds: 1000),
+													baseColor: Colors.black.withOpacity(0.4),
+													highlightColor: Colors.black.withOpacity(0.6),
+													child: Container(
+														alignment: Alignment.topCenter,
+														child: AspectRatio(
+															aspectRatio: 1,
+															child: Container(
+																height: 64.0,
+																width: double.infinity,
+																color: Colors.black,
+															)
+														)
+													)
+												)
+											)
+										)
 									);
 								}
 								if (snapshot.hasError) {
@@ -165,7 +196,7 @@ const EdgeInsetsGeometry kPadding = EdgeInsets.zero;
 const BorderRadius kBorderRadius = BorderRadius.all(Radius.circular(20));
 
 class BlurryContainer extends StatelessWidget {
-  final Widget child;
+  final Widget? child;
   final double blur;
   final double height, width;
   final EdgeInsetsGeometry padding;
@@ -175,7 +206,7 @@ class BlurryContainer extends StatelessWidget {
 
   const BlurryContainer({
     Key? key,
-    required this.child,
+    this.child,
     this.blur = 5,
     required this.height,
     required this.width,
@@ -210,8 +241,8 @@ class MatrixView<T> extends StatelessWidget {
 		AspectRatio(
 			aspectRatio: 1,
 			child: BlurryContainer(
-				height: 64.0 * matrix.length,
-				width: 64.0 * matrix.length,
+				height: 32.0 * matrix.length,
+				width: 32.0 * matrix.length,
 				bgColor: Colors.black.withOpacity(0.4),
 				child: Table(
 					children: matrix.map((row) =>
@@ -221,7 +252,7 @@ class MatrixView<T> extends StatelessWidget {
 								child: AspectRatio(
 									aspectRatio: 1,
 									child: Container(
-										height: 64,
+										height: 32,
 										child: Text(
 											e.toString(),
 											style: const TextStyle(
@@ -238,7 +269,7 @@ class MatrixView<T> extends StatelessWidget {
 							inside: const BorderSide(width: 1, color: Colors.white30),
 							outside: BorderSide.none
 					),
-					)
+				)
 			)
 		);
 }
