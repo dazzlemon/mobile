@@ -33,6 +33,14 @@ class MagicSquares extends StatefulWidget {
 
 List<Matrix<int>> magicSquaresList(int size) => magicSquares(size).toList();
 
+magicSquaresListView(List<Matrix<int>> magicSquares) =>
+	ListView.separated(
+		itemCount: magicSquares.length + 2,// one item in front and one at end
+		separatorBuilder: (_, __) => const SizedBox(height: 32),
+		itemBuilder: (_, int i) => i == 0 || i == magicSquares.length + 1 ? Container()
+		                                                                  : MatrixView(magicSquares[i - 1])
+	);
+
 class MagicSquaresState extends State<MagicSquares> {
 	int size = 3;
 	Cancelable<List<Iterable<Iterable<int>>>>? task;
@@ -41,50 +49,50 @@ class MagicSquaresState extends State<MagicSquares> {
 	Widget build(BuildContext context) {
 		task?.cancel();
 		task = Executor().execute(fun1: magicSquaresList, arg1: size);
-		return Scaffold(
-			body: Container(
-				decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("assets/bg.jpg"),
-            fit: BoxFit.cover,
-          ),
-        ),
-				child: SafeArea(
-					child: FutureBuilder<List<Matrix<int>>>(
-						future: task,
-						// future: compute(magicSquaresList, size),
-						builder: (BuildContext context, AsyncSnapshot<List<Matrix<int>>> snapshot) {
-							if (snapshot.connectionState == ConnectionState.waiting) {
-								return const AspectRatio(
-									aspectRatio: 1,
-									child: CircularProgressIndicator(color: Colors.pinkAccent)
-								);
-							}
-							if (snapshot.hasError) {
-								return const Text('There was an error :(');
-							} else if (snapshot.hasData) {
-								return Container(
-									padding: const EdgeInsets.only(left: 32, right: 32),
-									// color: Colors.blueGrey.shade100,
-									child: snapshot.data!.isEmpty ? Text('No magic squares of size $size') : ListView.separated(
-										itemCount: snapshot.data!.length,
-										separatorBuilder: (_, __) => const SizedBox(
-											height: 32,
-										),
-										itemBuilder: (_, int i) => MatrixView(snapshot.data![i]),
-									)
-								);
-							} else {
-								return const AspectRatio(
-									aspectRatio: 1,
-									child: CircularProgressIndicator(color: Colors.pinkAccent)
-								);
-							}
-						},
+		return Stack(
+			children: [
+				Container(
+					decoration: const BoxDecoration(
+						image: DecorationImage(
+							image: AssetImage("assets/bg.jpg"),
+							fit: BoxFit.cover
+						)
 					)
+    		),
+				Scaffold(
+					backgroundColor: Colors.transparent,
+					body: SafeArea(
+						child: FutureBuilder<List<Matrix<int>>>(
+							future: task,
+							// future: compute(magicSquaresList, size),
+							builder: (BuildContext context, AsyncSnapshot<List<Matrix<int>>> snapshot) {
+								if (snapshot.connectionState == ConnectionState.waiting) {
+									return const AspectRatio(
+										aspectRatio: 1,
+										child: CircularProgressIndicator(color: Colors.pinkAccent)
+									);
+								}
+								if (snapshot.hasError) {
+									return const Text('There was an error :(');
+								} else if (snapshot.hasData) {
+									return Container(
+										padding: const EdgeInsets.only(left: 32, right: 32),
+										// color: Colors.blueGrey.shade100,
+										child: snapshot.data!.isEmpty ? Text('No magic squares of size $size')
+																									: magicSquaresListView(snapshot.data!)
+									);
+								} else {
+									return const AspectRatio(
+										aspectRatio: 1,
+										child: CircularProgressIndicator(color: Colors.pinkAccent)
+									);
+								}
+							},
+						)
+					),
+					floatingActionButton: IntSelect(1, 4, size, onChange: (i) => setState(() => size = i))
 				)
-			),
-			floatingActionButton: IntSelect(1, 4, size, onChange: (i) => setState(() => size = i))
+			]
 		);
 	}
 }
@@ -105,7 +113,7 @@ class IntSelectState extends State<IntSelect> {
 	@override
 	void initState() {
 		super.initState();
-		selected = widget.min;
+		selected = widget.selected;
 	}
 
   @override
@@ -138,8 +146,8 @@ class IntSelectState extends State<IntSelect> {
   }
 }
 
-const EdgeInsetsGeometry kPadding = EdgeInsets.all(5);
-const BorderRadius kBorderRadius = BorderRadius.all(Radius.circular(5));
+const EdgeInsetsGeometry kPadding = EdgeInsets.zero;
+const BorderRadius kBorderRadius = BorderRadius.all(Radius.circular(20));
 
 class BlurryContainer extends StatelessWidget {
   final Widget child;
@@ -187,34 +195,38 @@ class MatrixView<T> extends StatelessWidget {
 
 	@override
 	Widget build(BuildContext context) =>
-		BlurryContainer(
-			height: 64.0 * matrix.length,
-			width: 60,
-			bgColor: Colors.black.withOpacity(0.4),
-			borderRadius: BorderRadius.circular(5),
-			child: Table(
-				children: matrix.map((row) =>
-					TableRow(
-						children: row.map((e) => TableCell(
-							verticalAlignment: TableCellVerticalAlignment.middle,
-							child: Container(
-								height: 64,
-								child: Text(
-									e.toString(),
-									style: const TextStyle(
-										color: Colors.white70
+		AspectRatio(
+			aspectRatio: 1,
+			child: BlurryContainer(
+				height: 64.0 * matrix.length,
+				width: 64.0 * matrix.length,
+				bgColor: Colors.black.withOpacity(0.4),
+				child: Table(
+					children: matrix.map((row) =>
+						TableRow(
+							children: row.map((e) => TableCell(
+								verticalAlignment: TableCellVerticalAlignment.middle,
+								child: AspectRatio(
+									aspectRatio: 1,
+									child: Container(
+										height: 64,
+										child: Text(
+											e.toString(),
+											style: const TextStyle(
+												color: Colors.white70
+											)
+										),
+										alignment: Alignment.center,
 									)
-								),
-								// color: Colors.white,
-								alignment: Alignment.center,
-							)
-						)).toList()
+								)
+							)).toList()
+						)
+					).toList(),
+					border: TableBorder.symmetric(
+							inside: const BorderSide(width: 1, color: Colors.white30),
+							outside: BorderSide.none
+					),
 					)
-				).toList(),
-				border: TableBorder.symmetric(
-						inside: const BorderSide(width: 1, color: Colors.white30),
-						outside: BorderSide.none
-				),
-				)
+			)
 		);
 }
