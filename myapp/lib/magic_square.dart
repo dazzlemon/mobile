@@ -51,7 +51,7 @@ bool isMagicSquare(Matrix<int> matrix) {
 	);
 }
 
-Iterable<Matrix<int>> magicSquares(int size) =>
+Stream<Matrix<int>> magicSquares(int size) =>
 	permutations(size * size)
 		.map((p) => p.chunks(size).toList())
 		.where(isMagicSquare);

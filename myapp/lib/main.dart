@@ -32,7 +32,7 @@ class MagicSquares extends StatefulWidget {
 	MagicSquaresState createState() => MagicSquaresState();
 }
 
-List<Matrix<int>> magicSquaresList(int size) => magicSquares(size).toList();
+Future<List<Matrix<int>>> magicSquaresList(int size) => magicSquares(size).toList();
 
 magicSquaresListView(List<Matrix<int>> magicSquares) =>
 	ListView.separated(
