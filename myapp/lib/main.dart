@@ -32,27 +32,25 @@ class MagicSquares extends StatefulWidget {
 	MagicSquaresState createState() => MagicSquaresState();
 }
 
-magicSquaresListView(List<Matrix<int>> magicSquares, {bool loading = false}) =>
-	ListView.separated(
-		itemCount: magicSquares.length + 2 + (loading ? 1 : 0),// one item in front and one at end + optional separator
+ListView magicSquaresListView(List<Matrix<int>> magicSquares, int size, {bool loading = false}) {
+	double cellSize = 64;
+	Iterable rows = magicSquares.map((m) => Row(
+		children: [SizedBox(
+			child: MatrixView(m, cellSize),
+			height: cellSize * size,
+			width:  cellSize * size,
+		)],
+		mainAxisAlignment: MainAxisAlignment.center
+	));
+	rows = [Container(), ...rows, if (loading) loadingMatrix(cellSize * size), Container()];
+
+	return ListView.separated(
+		itemCount: rows.length,
 		separatorBuilder: (_, __) => const SizedBox(height: 32),
-		itemBuilder: (_, int i) {
-			if (i == 0 || i == magicSquares.length + 1 + (loading ? 1 : 0)) {// first and last
-				return Container();
-			}
-			if (loading && i == magicSquares.length + 1) {// prelast
-				return loadingMatrix();
-			}
-		  return Row(
-				children: [SizedBox(
-					child: MatrixView(magicSquares[i - 1]),
-					height: magicSquares.length == 1 ? 64 : 32.0 * magicSquares.length,
-					width:  magicSquares.length == 1 ? 64 : 32.0 * magicSquares.length,
-				)],
-				mainAxisAlignment: MainAxisAlignment.center
-			);
-		}
+		itemBuilder: (_, int i) => rows.elementAt(i)
 	);
+}
+	
 
 class IsolateInit {
 	final SendPort sendPort;
@@ -121,8 +119,16 @@ class MagicSquaresState extends State<MagicSquares> {
 				Scaffold(
 					backgroundColor: Colors.transparent,
 					body: SafeArea(
-						child: !loading && list.isEmpty ? noMagicSquares(size)
-						                                : magicSquaresListView(list, loading: loading)
+						child: Container(
+							padding: const EdgeInsets.only(left: 32, right: 32),
+							child: loading || list.isNotEmpty
+								? magicSquaresListView(list, size, loading: loading)
+								: Container(
+									alignment: Alignment.center,
+									child: noMagicSquares(size),
+									height: double.infinity
+								)
+						)
 					),
 					floatingActionButton: IntSelect(1, 4, size, onChange: (i) => setState(() {
 						size = i;
@@ -152,15 +158,14 @@ BlurryContainer noMagicSquares(int size) =>
 		)
 	);
 
-Container loadingMatrix() =>
+Container loadingMatrix(double size) =>
 	Container(
 		alignment: Alignment.topCenter,
-		padding: const EdgeInsets.only(top: 32, left: 32, right: 32),
 		child: AspectRatio(
 			aspectRatio: 1,
 			child: BlurryContainer(
-				height: 64.0,
-				width: double.infinity,
+				height: size,
+				width: size,
 				child: Shimmer.fromColors(
 					period: const Duration(milliseconds: 1000),
 					baseColor: Colors.black.withOpacity(0.4),
@@ -170,8 +175,6 @@ Container loadingMatrix() =>
 						child: AspectRatio(
 							aspectRatio: 1,
 							child: Container(
-								height: 64.0,
-								width: double.infinity,
 								color: Colors.black,
 							)
 						)
@@ -272,15 +275,16 @@ class BlurryContainer extends StatelessWidget {
 
 class MatrixView<T> extends StatelessWidget {
 	final Matrix<T> matrix;
-	const MatrixView(this.matrix, {Key? key}) : super(key: key);
+	final double cellSize;
+	const MatrixView(this.matrix, this.cellSize, {Key? key}) : super(key: key);
 
 	@override
 	Widget build(BuildContext context) =>
 		AspectRatio(
 			aspectRatio: 1,
 			child: BlurryContainer(
-				height: 32.0 * matrix.length,
-				width: 32.0 * matrix.length,
+				height: cellSize * matrix.length,
+				width: cellSize * matrix.length,
 				bgColor: Colors.black.withOpacity(0.4),
 				child: Table(
 					children: matrix.map((row) =>
@@ -290,7 +294,7 @@ class MatrixView<T> extends StatelessWidget {
 								child: AspectRatio(
 									aspectRatio: 1,
 									child: Container(
-										height: 32,
+										height: cellSize,
 										child: Text(
 											e.toString(),
 											style: const TextStyle(
