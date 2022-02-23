@@ -76,6 +76,8 @@ Future<void> magicSquaresIsolate(IsolateInit init) async {
 class MagicSquaresState extends State<MagicSquares> {
 	int size = 3;
 	late Isolate isolate;
+	late ReceivePort receivePort;
+	late ReceivePort exitPort;
 	List<Matrix<int>> list = [];
 	bool loading = true;
 
@@ -88,19 +90,28 @@ class MagicSquaresState extends State<MagicSquares> {
 	@override
   void dispose() {
     super.dispose();
-		isolate.kill();
+		stopIsolate();
   }
+
+	void stopIsolate() {
+		isolate.kill();
+		receivePort.close();
+		exitPort.close();
+	}
 
 	void startNewIsolate() async {
 		loading = true;
 		list = [];
-		var receivePort = ReceivePort();
-		var exitPort = ReceivePort();
-		var initMsg = IsolateInit(
-			receivePort.sendPort,
-			size
+		receivePort = ReceivePort();
+		exitPort = ReceivePort();
+		isolate = await Isolate.spawn(
+			magicSquaresIsolate,
+			IsolateInit(
+				receivePort.sendPort,
+				size
+			),
+			onExit: exitPort.sendPort
 		);
-		isolate = await Isolate.spawn(magicSquaresIsolate, initMsg, onExit: exitPort.sendPort);
 		receivePort.listen((msg) =>
 			setState(() {
 				list.add(msg);
@@ -139,7 +150,7 @@ class MagicSquaresState extends State<MagicSquares> {
 					),
 					floatingActionButton: IntSelect(1, 4, size, onChange: (i) => setState(() {
 						size = i;
-						isolate.kill();
+						stopIsolate();
 						startNewIsolate();
 					}))
 				)
