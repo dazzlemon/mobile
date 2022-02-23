@@ -1,10 +1,10 @@
+import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'magic_square.dart';
 import 'matrix.dart';
 import 'package:xrange/xrange.dart';
-import 'package:worker_manager/worker_manager.dart';
 import 'package:shimmer/shimmer.dart';
 
 void main() {
@@ -32,31 +32,82 @@ class MagicSquares extends StatefulWidget {
 	MagicSquaresState createState() => MagicSquaresState();
 }
 
-Future<List<Matrix<int>>> magicSquaresList(int size) => magicSquares(size).toList();
-
-magicSquaresListView(List<Matrix<int>> magicSquares) =>
+magicSquaresListView(List<Matrix<int>> magicSquares, {bool loading = false}) =>
 	ListView.separated(
-		itemCount: magicSquares.length + 2,// one item in front and one at end
+		itemCount: magicSquares.length + 2 + (loading ? 1 : 0),// one item in front and one at end + optional separator
 		separatorBuilder: (_, __) => const SizedBox(height: 32),
-		itemBuilder: (_, int i) => i == 0 || i == magicSquares.length + 1 ? Container()
-		                                                                  : Row(
-			children: [SizedBox(
-				child: MatrixView(magicSquares[i - 1]),
-				height: magicSquares.length == 1 ? 64 : 32.0 * magicSquares.length,
-				width:  magicSquares.length == 1 ? 64 : 32.0 * magicSquares.length,
-			)],
-			mainAxisAlignment: MainAxisAlignment.center
-		)
+		itemBuilder: (_, int i) {
+			if (i == 0 || i == magicSquares.length + 1 + (loading ? 1 : 0)) {// first and last
+				return Container();
+			}
+			if (loading && i == magicSquares.length + 1) {// prelast
+				return loadingMatrix();
+			}
+		  return Row(
+				children: [SizedBox(
+					child: MatrixView(magicSquares[i - 1]),
+					height: magicSquares.length == 1 ? 64 : 32.0 * magicSquares.length,
+					width:  magicSquares.length == 1 ? 64 : 32.0 * magicSquares.length,
+				)],
+				mainAxisAlignment: MainAxisAlignment.center
+			);
+		}
 	);
+
+class IsolateInit {
+	final SendPort sendPort;
+	final int size;
+	IsolateInit(this.sendPort, this.size);
+}
+
+Future<void> magicSquaresIsolate(IsolateInit init) async {
+	await for (final magicSquare in magicSquares(init.size)) {
+		init.sendPort.send(magicSquare);
+	}
+}
 
 class MagicSquaresState extends State<MagicSquares> {
 	int size = 3;
-	Cancelable<List<Iterable<Iterable<int>>>>? task;
+	// Cancelable<List<Iterable<Iterable<int>>>>? task;
+	
+	late Isolate isolate;
+	List<Matrix<int>> list = [];
+	bool loading = true;
+
+	@override
+  void initState() {
+    super.initState();
+		startNewIsolate();
+  }
+
+	@override
+  void dispose() {
+    super.dispose();
+		isolate.kill();
+  }
+
+	void startNewIsolate() async {
+		loading = true;
+		list = [];
+		var receivePort = ReceivePort();
+		var exitPort = ReceivePort();
+		var initMsg = IsolateInit(
+			receivePort.sendPort,
+			size
+		);
+		isolate = await Isolate.spawn(magicSquaresIsolate, initMsg, onExit: exitPort.sendPort);
+		receivePort.listen((msg) =>
+			setState(() {
+				list.add(msg);
+			})
+		);
+		exitPort.listen((msg) =>
+			setState(() => loading = false)
+		);
+	}
 
 	@override
 	Widget build(BuildContext context) {
-		task?.cancel();
-		task = Executor().execute(fun1: magicSquaresList, arg1: size);
 		return Stack(
 			children: [
 				Container(
@@ -70,78 +121,65 @@ class MagicSquaresState extends State<MagicSquares> {
 				Scaffold(
 					backgroundColor: Colors.transparent,
 					body: SafeArea(
-						child: FutureBuilder<List<Matrix<int>>>(
-							future: task,
-							// future: compute(magicSquaresList, size),
-							builder: (BuildContext context, AsyncSnapshot<List<Matrix<int>>> snapshot) {
-								if (snapshot.connectionState == ConnectionState.waiting) {
-									return Container(
-										alignment: Alignment.topCenter,
-										padding: const EdgeInsets.only(top: 32, left: 32, right: 32),
-										child: AspectRatio(
-											aspectRatio: 1,
-											child: BlurryContainer(
-												height: 64.0,
-												width: double.infinity,
-												child: Shimmer.fromColors(
-													period: const Duration(milliseconds: 1000),
-													baseColor: Colors.black.withOpacity(0.4),
-													highlightColor: Colors.black.withOpacity(0.6),
-													child: Container(
-														alignment: Alignment.topCenter,
-														child: AspectRatio(
-															aspectRatio: 1,
-															child: Container(
-																height: 64.0,
-																width: double.infinity,
-																color: Colors.black,
-															)
-														)
-													)
-												)
-											)
-										)
-									);
-								}
-								if (snapshot.hasError) {
-									return const Text('There was an error :(');
-								} else if (snapshot.hasData) {
-									return Container(
-										alignment: Alignment.center,
-										padding: const EdgeInsets.only(left: 32, right: 32),
-										// color: Colors.blueGrey.shade100,
-										child: snapshot.data!.isNotEmpty ? magicSquaresListView(snapshot.data!)
-										                                 : BlurryContainer(
-											height: 64.0,
-											width: double.infinity,
-											bgColor: Colors.black.withOpacity(0.4),
-											child: Container(
-												alignment: Alignment.center,
-												child: Text(
-													'No magic squares of size $size',
-													style: const TextStyle(
-														color: Colors.white70,
-													),
-													textAlign: TextAlign.center,
-												)
-											)
-										)
-									);
-								} else {
-									return const AspectRatio(
-										aspectRatio: 1,
-										child: CircularProgressIndicator(color: Colors.pinkAccent)
-									);
-								}
-							},
-						)
+						child: !loading && list.isEmpty ? noMagicSquares(size)
+						                                : magicSquaresListView(list, loading: loading)
 					),
-					floatingActionButton: IntSelect(1, 4, size, onChange: (i) => setState(() => size = i))
+					floatingActionButton: IntSelect(1, 4, size, onChange: (i) => setState(() {
+						size = i;
+						isolate.kill();
+						startNewIsolate();
+					}))
 				)
 			]
 		);
 	}
 }
+
+BlurryContainer noMagicSquares(int size) =>
+	BlurryContainer(
+		height: 64.0,
+		width: double.infinity,
+		bgColor: Colors.black.withOpacity(0.4),
+		child: Container(
+			alignment: Alignment.center,
+			child: Text(
+				'No magic squares of size $size',
+				style: const TextStyle(
+					color: Colors.white70,
+				),
+				textAlign: TextAlign.center,
+			)
+		)
+	);
+
+Container loadingMatrix() =>
+	Container(
+		alignment: Alignment.topCenter,
+		padding: const EdgeInsets.only(top: 32, left: 32, right: 32),
+		child: AspectRatio(
+			aspectRatio: 1,
+			child: BlurryContainer(
+				height: 64.0,
+				width: double.infinity,
+				child: Shimmer.fromColors(
+					period: const Duration(milliseconds: 1000),
+					baseColor: Colors.black.withOpacity(0.4),
+					highlightColor: Colors.black.withOpacity(0.6),
+					child: Container(
+						alignment: Alignment.topCenter,
+						child: AspectRatio(
+							aspectRatio: 1,
+							child: Container(
+								height: 64.0,
+								width: double.infinity,
+								color: Colors.black,
+							)
+						)
+					)
+				)
+			)
+		)
+	);
 
 class IntSelect extends StatefulWidget {
 	final int min;
