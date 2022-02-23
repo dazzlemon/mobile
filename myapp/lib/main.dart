@@ -32,25 +32,34 @@ class MagicSquares extends StatefulWidget {
 	MagicSquaresState createState() => MagicSquaresState();
 }
 
-ListView magicSquaresListView(List<Matrix<int>> magicSquares, int size, {bool loading = false}) {
-	double cellSize = 64;
-	Iterable rows = magicSquares.map((m) => Row(
-		children: [SizedBox(
-			child: MatrixView(m, cellSize),
-			height: cellSize * size,
-			width:  cellSize * size,
-		)],
-		mainAxisAlignment: MainAxisAlignment.center
-	));
-	rows = [Container(), ...rows, if (loading) loadingMatrix(cellSize * size), Container()];
-
-	return ListView.separated(
-		itemCount: rows.length,
-		separatorBuilder: (_, __) => const SizedBox(height: 32),
-		itemBuilder: (_, int i) => rows.elementAt(i)
+ListView listViewWithOutsideSeparators(Iterable<Widget>children, Widget Function(BuildContext, int) separatorBuilder) {
+	var items = [Container(), ...children, Container()];
+	return 	ListView.separated(
+		itemBuilder: (_, i) => items.elementAt(i),
+		separatorBuilder: separatorBuilder,
+		itemCount: items.length
 	);
 }
-	
+
+ListView magicSquaresListView(List<Matrix<int>> magicSquares, int size, {bool loading = false}) {
+	double cellSize = 64;
+	return listViewWithOutsideSeparators(
+		[
+			...magicSquares.map((m) => Container(
+				alignment: Alignment.center,
+				child: squareBox(
+					MatrixView(m, cellSize),
+					cellSize * size
+				),
+			)),
+			if (loading) loadingMatrix(cellSize * size)
+		],
+		(_, __) => const SizedBox(height: 32),
+	);
+}
+
+SizedBox squareBox(Widget child, double size) =>
+	SizedBox(child: child, width: size, height: size);
 
 class IsolateInit {
 	final SendPort sendPort;
@@ -66,8 +75,6 @@ Future<void> magicSquaresIsolate(IsolateInit init) async {
 
 class MagicSquaresState extends State<MagicSquares> {
 	int size = 3;
-	// Cancelable<List<Iterable<Iterable<int>>>>? task;
-	
 	late Isolate isolate;
 	List<Matrix<int>> list = [];
 	bool loading = true;
@@ -143,8 +150,7 @@ class MagicSquaresState extends State<MagicSquares> {
 
 BlurryContainer noMagicSquares(int size) =>
 	BlurryContainer(
-		height: 64.0,
-		width: double.infinity,
+		size: const Size.fromHeight(64),
 		bgColor: Colors.black.withOpacity(0.4),
 		child: Container(
 			alignment: Alignment.center,
@@ -161,22 +167,18 @@ BlurryContainer noMagicSquares(int size) =>
 Container loadingMatrix(double size) =>
 	Container(
 		alignment: Alignment.topCenter,
-		child: AspectRatio(
-			aspectRatio: 1,
-			child: BlurryContainer(
-				height: size,
-				width: size,
-				child: Shimmer.fromColors(
-					period: const Duration(milliseconds: 1000),
-					baseColor: Colors.black.withOpacity(0.4),
-					highlightColor: Colors.black.withOpacity(0.6),
-					child: Container(
-						alignment: Alignment.topCenter,
-						child: AspectRatio(
-							aspectRatio: 1,
-							child: Container(
-								color: Colors.black,
-							)
+		child: BlurryContainer(
+			size: Size.square(size),
+			child: Shimmer.fromColors(
+				period: const Duration(milliseconds: 1000),
+				baseColor: Colors.black.withOpacity(0.4),
+				highlightColor: Colors.black.withOpacity(0.6),
+				child: Container(
+					alignment: Alignment.topCenter,
+					child: AspectRatio(
+						aspectRatio: 1,
+						child: Container(
+							color: Colors.black,
 						)
 					)
 				)
@@ -239,7 +241,7 @@ const BorderRadius kBorderRadius = BorderRadius.all(Radius.circular(20));
 class BlurryContainer extends StatelessWidget {
   final Widget? child;
   final double blur;
-  final double height, width;
+  final Size size;
   final EdgeInsetsGeometry padding;
   final Color bgColor;
 
@@ -249,8 +251,7 @@ class BlurryContainer extends StatelessWidget {
     Key? key,
     this.child,
     this.blur = 5,
-    required this.height,
-    required this.width,
+    required this.size,
     this.padding = kPadding,
     this.bgColor = Colors.transparent,
     this.borderRadius = kBorderRadius,
@@ -263,8 +264,8 @@ class BlurryContainer extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
         child: Container(
-          height: height,
-          width: width,
+          height: size.height,
+          width: size.width,
           padding: padding,
           color: bgColor,
           child: child,
@@ -283,26 +284,23 @@ class MatrixView<T> extends StatelessWidget {
 		AspectRatio(
 			aspectRatio: 1,
 			child: BlurryContainer(
-				height: cellSize * matrix.length,
-				width: cellSize * matrix.length,
+				size: Size.square(cellSize * matrix.length),
 				bgColor: Colors.black.withOpacity(0.4),
 				child: Table(
 					children: matrix.map((row) =>
 						TableRow(
 							children: row.map((e) => TableCell(
 								verticalAlignment: TableCellVerticalAlignment.middle,
-								child: AspectRatio(
-									aspectRatio: 1,
-									child: Container(
-										height: cellSize,
+								child: squareBox(
+									Center(
 										child: Text(
 											e.toString(),
 											style: const TextStyle(
 												color: Colors.white70
 											)
-										),
-										alignment: Alignment.center,
-									)
+										)
+									),
+									cellSize
 								)
 							)).toList()
 						)
