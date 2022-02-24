@@ -1,8 +1,15 @@
 import 'package:collection/collection.dart';
 import 'package:xrange/xrange.dart';
 import 'package:list_ext/list_ext.dart' hide IntIterableExtensions;
-import 'matrix.dart';
 import 'permutations.dart';
+
+typedef Matrix<T> = Iterable<Iterable<T>>;
+
+Matrix<T> makeMatrix<T>(int rows, int cols, T fill) =>
+	Matrix<T>.generate(
+		rows,
+		(i) => List<T>.filled(cols, fill)
+	);
 
 Matrix<T> transpose<T>(Matrix<T> matrix) {
 	if (matrix.isEmpty) {

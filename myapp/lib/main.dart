@@ -1,11 +1,10 @@
 import 'dart:isolate';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'magic_square.dart';
-import 'matrix.dart';
 import 'package:xrange/xrange.dart';
-import 'package:shimmer/shimmer.dart';
+import 'util.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,15 +31,6 @@ class MagicSquares extends StatefulWidget {
 	MagicSquaresState createState() => MagicSquaresState();
 }
 
-ListView listViewWithOutsideSeparators(Iterable<Widget>children, Widget Function(BuildContext, int) separatorBuilder) {
-	var items = [Container(), ...children, Container()];
-	return 	ListView.separated(
-		itemBuilder: (_, i) => items.elementAt(i),
-		separatorBuilder: separatorBuilder,
-		itemCount: items.length
-	);
-}
-
 ListView magicSquaresListView(List<Matrix<int>> magicSquares, int size, {bool loading = false}) {
 	double cellSize = 64;
 	return listViewWithOutsideSeparators(
@@ -52,7 +42,7 @@ ListView magicSquaresListView(List<Matrix<int>> magicSquares, int size, {bool lo
 					cellSize * size
 				),
 			)),
-			if (loading) loadingMatrix(cellSize * size)
+			if (loading) frostedGlassShimmer(Size.square(cellSize * size))
 		],
 		(_, __) => const SizedBox(height: 32),
 	);
@@ -159,45 +149,7 @@ class MagicSquaresState extends State<MagicSquares> {
 	}
 }
 
-BlurryContainer noMagicSquares(int size) =>
-	BlurryContainer(
-		size: const Size.fromHeight(64),
-		bgColor: Colors.black.withOpacity(0.4),
-		child: Container(
-			alignment: Alignment.center,
-			child: Text(
-				'No magic squares of size $size',
-				style: const TextStyle(
-					color: Colors.white70,
-				),
-				textAlign: TextAlign.center,
-			)
-		)
-	);
-
-Container loadingMatrix(double size) =>
-	Container(
-		alignment: Alignment.topCenter,
-		child: BlurryContainer(
-			size: Size.square(size),
-			child: Shimmer.fromColors(
-				period: const Duration(milliseconds: 1000),
-				baseColor: Colors.black.withOpacity(0.4),
-				highlightColor: Colors.black.withOpacity(0.6),
-				child: Container(
-					alignment: Alignment.topCenter,
-					child: AspectRatio(
-						aspectRatio: 1,
-						child: Container(
-							color: Colors.black,
-						)
-					)
-				)
-			)
-		)
-	);
-
-class IntSelect extends StatefulWidget {
+class IntSelect extends HookWidget {
 	final int min;
 	final int max;
 	final int selected;
@@ -205,21 +157,10 @@ class IntSelect extends StatefulWidget {
 	const IntSelect(this.min, this.max, this.selected, {Key? key, this.onChange}) : super(key: key);
 
   @override
-  State<IntSelect> createState() => IntSelectState();
-}
-
-class IntSelectState extends State<IntSelect> {
-	late int selected;
-	@override
-	void initState() {
-		super.initState();
-		selected = widget.selected;
-	}
-
-  @override
   Widget build(BuildContext context) {
+		final selected_ = useState(selected);
 		return DropdownButton<int>(
-      value: selected,
+      value: selected_.value,
       icon: const Icon(Icons.arrow_downward),
       elevation: 16,
       style: const TextStyle(color: Colors.deepPurple),
@@ -228,14 +169,12 @@ class IntSelectState extends State<IntSelect> {
         color: Colors.deepPurpleAccent,
       ),
       onChanged: (int? newValue) {
-        setState(() {
-					if (newValue != null && newValue != selected) {
-          	selected = newValue;
-						widget.onChange?.call(newValue);
-					}
-				});
-      },
-      items: integers(widget.min, widget.max + 1)
+				if (newValue != null && newValue != selected) {
+					selected_.value = newValue;
+					onChange?.call(newValue);
+				}
+			},
+      items: integers(min, max + 1)
         .map((i) =>
 					DropdownMenuItem<int>(
 						value: i,
@@ -244,45 +183,6 @@ class IntSelectState extends State<IntSelect> {
       ).toList(),
     );
   }
-}
-
-const EdgeInsetsGeometry kPadding = EdgeInsets.zero;
-const BorderRadius kBorderRadius = BorderRadius.all(Radius.circular(20));
-
-class BlurryContainer extends StatelessWidget {
-  final Widget? child;
-  final double blur;
-  final Size size;
-  final EdgeInsetsGeometry padding;
-  final Color bgColor;
-
-  final BorderRadius borderRadius;
-
-  const BlurryContainer({
-    Key? key,
-    this.child,
-    this.blur = 5,
-    required this.size,
-    this.padding = kPadding,
-    this.bgColor = Colors.transparent,
-    this.borderRadius = kBorderRadius,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) =>
-    ClipRRect(
-      borderRadius: borderRadius,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-        child: Container(
-          height: size.height,
-          width: size.width,
-          padding: padding,
-          color: bgColor,
-          child: child,
-        ),
-      ),
-    );
 }
 
 class MatrixView<T> extends StatelessWidget {
