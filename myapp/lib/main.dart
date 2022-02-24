@@ -24,13 +24,6 @@ class MyApp extends StatelessWidget {
 		);
 }
 
-class MagicSquares extends StatefulWidget {
-  const MagicSquares({Key? key}) : super(key: key);
-
-	@override
-	MagicSquaresState createState() => MagicSquaresState();
-}
-
 ListView magicSquaresListView(List<Matrix<int>> magicSquares, int size, {bool loading = false}) {
 	double cellSize = 64;
 	return listViewWithOutsideSeparators(
@@ -63,57 +56,49 @@ Future<void> magicSquaresIsolate(IsolateInit init) async {
 	}
 }
 
-class MagicSquaresState extends State<MagicSquares> {
-	int size = 3;
-	late Isolate isolate;
-	late ReceivePort receivePort;
-	late ReceivePort exitPort;
-	List<Matrix<int>> list = [];
-	bool loading = true;
-
-	@override
-  void initState() {
-    super.initState();
-		startNewIsolate();
-  }
-
-	@override
-  void dispose() {
-    super.dispose();
-		stopIsolate();
-  }
-
-	void stopIsolate() {
-		isolate.kill();
-		receivePort.close();
-		exitPort.close();
-	}
-
-	void startNewIsolate() async {
-		loading = true;
-		list = [];
-		receivePort = ReceivePort();
-		exitPort = ReceivePort();
-		isolate = await Isolate.spawn(
-			magicSquaresIsolate,
-			IsolateInit(
-				receivePort.sendPort,
-				size
-			),
-			onExit: exitPort.sendPort
-		);
-		receivePort.listen((msg) =>
-			setState(() {
-				list.add(msg);
-			})
-		);
-		exitPort.listen((msg) =>
-			setState(() => loading = false)
-		);
-	}
+class MagicSquares extends HookWidget {
+  const MagicSquares({Key? key}) : super(key: key);
 
 	@override
 	Widget build(BuildContext context) {
+		final size = useState(3);
+		final list = useState(<Matrix<int>>[]);
+		final loading = useState(true);
+
+		final isolate = useState<Isolate?>(null);
+		final receivePort = useState<ReceivePort?>(null);
+		final exitPort = useState<ReceivePort?>(null);
+
+		void startIsolate() async {
+			print('startIsolate');
+			list.value = [];
+			loading.value = true;
+			receivePort.value = ReceivePort();
+			exitPort.value = ReceivePort();
+			isolate.value = await Isolate.spawn(
+				magicSquaresIsolate,
+				IsolateInit(
+					receivePort.value!.sendPort,
+					size.value
+				),
+				onExit: exitPort.value!.sendPort
+			);
+			receivePort.value!.listen((msg) => list.value = [...list.value, msg]);
+			exitPort.value!.listen((msg) => loading.value = false);
+		}
+
+		void stopIsolate() {
+			print('stopIsolate');
+			isolate.value?.kill();
+			receivePort.value?.close();
+			exitPort.value?.close();
+		}
+
+		useEffect(() {
+			print('useEffect');
+			startIsolate();
+		}, []);
+
 		return Stack(
 			children: [
 				Container(
@@ -129,20 +114,20 @@ class MagicSquaresState extends State<MagicSquares> {
 					body: SafeArea(
 						child: Container(
 							padding: const EdgeInsets.only(left: 32, right: 32),
-							child: loading || list.isNotEmpty
-								? magicSquaresListView(list, size, loading: loading)
+							child: loading.value || list.value.isNotEmpty
+								? magicSquaresListView(list.value, size.value, loading: loading.value)
 								: Container(
 									alignment: Alignment.center,
-									child: noMagicSquares(size),
+									child: noMagicSquares(size.value),
 									height: double.infinity
 								)
 						)
 					),
-					floatingActionButton: IntSelect(1, 4, size, onChange: (i) => setState(() {
-						size = i;
+					floatingActionButton: IntSelect(1, 4, size.value, onChange: (i) {
+						size.value = i;
 						stopIsolate();
-						startNewIsolate();
-					}))
+						startIsolate();
+					})
 				)
 			]
 		);
