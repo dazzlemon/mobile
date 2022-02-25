@@ -1,7 +1,9 @@
 import 'dart:isolate';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:list_ext/src/interable_extensions.dart';
 import 'magic_square.dart';
 import 'package:xrange/xrange.dart';
 import 'util.dart';
@@ -24,7 +26,7 @@ class MyApp extends StatelessWidget {
 		);
 }
 
-ListView magicSquaresListView(List<Matrix<int>> magicSquares, int size, {bool loading = false}) {
+ListView magicSquaresListView(List<List<int>> magicSquares, int size, {bool loading = false}) {
 	double cellSize = 64;
 	return listViewWithOutsideSeparators(
 		[
@@ -62,7 +64,7 @@ class MagicSquares extends HookWidget {
 	@override
 	Widget build(BuildContext context) {
 		final size = useState(3);
-		final list = useState(<Matrix<int>>[]);
+		final list = useState(<List<int>>[]);
 		final loading = useState(true);
 
 		final isolate = useState<Isolate?>(null);
@@ -171,7 +173,7 @@ class IntSelect extends HookWidget {
 }
 
 class MatrixView<T> extends StatelessWidget {
-	final Matrix<T> matrix;
+	final List<T> matrix;
 	final double cellSize;
 	const MatrixView(this.matrix, this.cellSize, {Key? key}) : super(key: key);
 
@@ -183,7 +185,7 @@ class MatrixView<T> extends StatelessWidget {
 				size: Size.square(cellSize * matrix.length),
 				bgColor: Colors.black.withOpacity(0.4),
 				child: Table(
-					children: matrix.map((row) =>
+					children: matrix.chunks(sqrt(matrix.length).toInt()).map((row) =>
 						TableRow(
 							children: row.map((e) => TableCell(
 								verticalAlignment: TableCellVerticalAlignment.middle,

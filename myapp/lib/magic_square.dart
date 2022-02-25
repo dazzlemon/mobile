@@ -1,64 +1,53 @@
-import 'package:collection/collection.dart';
+import 'package:list_ext/src/interable_extensions.dart';
 import 'package:xrange/xrange.dart';
-import 'package:list_ext/list_ext.dart' hide IntIterableExtensions;
-import 'permutations.dart';
 
-typedef Matrix<T> = Iterable<Iterable<T>>;
+Stream<Iterable<int>> permutations(int size) =>
+	permutations_(integers(1, size + 1));
 
-Matrix<T> makeMatrix<T>(int rows, int cols, T fill) =>
-	Matrix<T>.generate(
-		rows,
-		(i) => List<T>.filled(cols, fill)
-	);
-
-Matrix<T> transpose<T>(Matrix<T> matrix) {
-	if (matrix.isEmpty) {
-		return matrix;
+Stream<Iterable<int>> permutations_(Iterable<int> list) async* {
+	var factorials = <int>[];
+	factorials.add(1);
+	for (var i = 1; i <= list.length; i++) {
+		factorials.add(factorials[i - 1] * i);
 	}
-	if (matrix.any((row) => row.length != matrix.length)) {
-		throw StateError('Not a matrix');
-	}
-	if (matrix.first.isEmpty) {
-		throw StateError('Degenerate matrix');
-	}
-	int nRows = matrix.length;
-	int nCols = matrix.first.length;
 
-	return List.generate(
-		nCols,
-		(i) => List.generate(
-			nRows, 
-			(j) => matrix.elementAt(j).elementAt(i)
-		)
-	);
+	for (var i = 0; i < factorials[list.length]; i++) {
+		var onePermutation = <int>[];
+		var temp = list.toList();
+		var positionCode = i;
+		for (var position = list.length; position > 0; position--) {
+			var selected = positionCode ~/ factorials[position - 1];
+			onePermutation.add(temp.elementAt(selected));
+			positionCode = positionCode % factorials[position - 1];
+			temp = temp.sublist(0, selected) + temp.sublist(selected + 1);
+		}
+		yield onePermutation;
+	}
 }
 
-bool isMagicSquare(Matrix<int> matrix) {
-	if (matrix.length == 2
-		|| matrix.any((row) => row.length != matrix.length)
-	) {
+bool isMagicSquare(Iterable<int> matrix, int size) {
+	var diagSum1 = 0;
+	var diagSum2 = 0;
+	var magicConst = size * (size * size + 1) / 2;
+	for (var i = 0; i < size; i++) {
+		var rowSum = 0;
+		var colSum = 0;
+		for (var j = 0; j < size; j++) {
+			rowSum += matrix.elementAt(j * size + i);
+			colSum += matrix.elementAt(i * size + j);
+		}
+		if (rowSum != magicConst || colSum != magicConst) {
+			return false;
+		}
+		diagSum1 += matrix.elementAt(i * size + i);
+		diagSum2 += matrix.elementAt((size - 1 - i) * size + i);
+	}
+	if (diagSum1 != magicConst || diagSum2 != magicConst) {
 		return false;
 	}
-	// print('testing' + matrix.toString());
-
-	var magicConst = matrix.length * (matrix.length * matrix.length + 1) / 2;
-	return !(
-		// check rows
-		matrix.any((row) => row.sum != magicConst)
-		// check cols
-		|| transpose(matrix).any((col) => col.sum != magicConst)
-		// check main diag
-		|| integers(0, matrix.length)
-			.map((i) => matrix.elementAt(i).elementAt(i))
-			.sum != magicConst
-		// check secondaryDiag
-		|| integers(0, matrix.length)
-			.map((i) => matrix.elementAt(i).elementAt(matrix.length - 1 - i))
-			.sum != magicConst
-	);
+	return true;
 }
 
-Stream<Matrix<int>> magicSquares(int size) =>
+Stream<Iterable<int>> magicSquares(int size) =>
 	permutations(size * size)
-		.map((p) => p.chunks(size).toList())
-		.where(isMagicSquare);
+		.where((p) => isMagicSquare(p, size));
