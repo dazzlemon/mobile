@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:list_ext/src/interable_extensions.dart';
+import 'package:list_ext/list_ext.dart';
 import 'magic_square.dart';
 import 'package:xrange/xrange.dart';
 import 'util.dart';
@@ -63,7 +63,7 @@ class MagicSquares extends HookWidget {
 
 	@override
 	Widget build(BuildContext context) {
-		final size = useState(3);
+		final size = useState(1);
 		final list = useState(<List<int>>[]);
 		final loading = useState(true);
 
