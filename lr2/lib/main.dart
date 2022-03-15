@@ -85,7 +85,7 @@ class MagicSquares extends HookWidget {
 				),
 				onExit: exitPort.value!.sendPort
 			);
-			receivePort.value!.listen((msg) => list.value = [...list.value, msg]);
+			receivePort.value!.listen((msg) => list.value += [msg]);
 			exitPort.value!.listen((msg) => loading.value = false);
 		}
 

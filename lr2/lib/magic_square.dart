@@ -32,7 +32,7 @@ Stream<List<int>> permutations_(Iterable<int> list) async* {
 }
 
 bool isMagicSquare(List<int> matrix, int size) {
-	print(matrix);
+	// print(matrix);
 	var diagSum1 = 0;
 	var diagSum2 = 0;
 	var magicConst = size * (size * size + 1) / 2;
