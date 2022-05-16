@@ -1,115 +1,428 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
-void main() {
-  runApp(const MyApp());
+///////// Data classes
+class Note {
+  String title;
+  String level;
+  DateTime dateCreate = DateTime.now();
+  DateTime dateModify = DateTime.now();
+  Note({this.title = '', this.level = 'none'});
+  update(other) {
+    this
+      ..title = other.title
+      ..level = other.level
+      ..dateModify = DateTime.now();
+  }
+}
+
+class Memo extends Note {
+  String details = "";
+  Memo({this.details = '', title = '', level = 'none'})
+      : super(title: title, level: level);
+  @override
+  update(other) {
+    super.update(other);
+    this.details = other.details;
+  }
+
+  @override
+  toString() => "memo||$title||$level||$details";
+}
+
+mixin Check {
+  bool done = false;
+}
+
+class Todo extends Memo with Check {
+  Todo({isDone = false, details = '', title = '', level = 'none'})
+      : super(title: title, level: level) {
+    done = isDone;
+  }
+  @override
+  update(other) {
+    super.update(other);
+    this.done = other.done;
+  }
+
+  @override
+  toString() => "todo||$done||$title||$level||$details";
+}
+
+//TODO class Event extend Todo with Date
+//Container
+class Notes {
+  List<Note> items = [];
+  var _curLevel = '*'; //filter value, * - all
+  Notes() {
+//test items
+// items.add(Memo(details:'string1 \n string2', title:'memo 1'));
+// items.add(Memo(details:'string1 \n string2', title:'memo 2'));
+// items.add(Memo(details:'string1 \n string2', title:'memo3',level:'high'));
+// items.add(Todo(isDone:false, details:'string1 \n string2', title:'todo1',level:'high'));
+// items.add(Todo(isDone:true, details:'string1 \n string2',title:'todo2'));
+// items.add(Memo(details:'string1 \n string2', title:'memo4',level:'high'));
+  }
+  get count => items.where(_filter).length;
+  get item => (int i) => items.where(_filter).toList()[i];
+  get levels => items.map((x) => x.level).toSet().toList();
+  get filter => _curLevel == "" ? "*" : _curLevel;
+  setFilter(lev) {
+    _curLevel = lev;
+  }
+
+  bool _filter(x) {
+    if (_curLevel == '*')
+      return true;
+    else
+      return _curLevel == x.level;
+  }
+
+  load() async {
+//TODO load from file
+    final directory = await getApplicationDocumentsDirectory();
+    print("load from $directory");
+    final file = File(directory.path + "/notes.txt");
+    items.clear();
+    for (String x in file.readAsLinesSync()) {
+      print(x);
+      var s = x.split("||");
+      switch (s[0]) {
+        case "todo":
+          items.add(Todo(
+              isDone: s[1] == "true", title: s[2], level: s[3], details: s[4]));
+          break;
+        case "memo":
+          items.add(Memo(title: s[1], level: s[2], details: s[3]));
+      }
+    }
+    print("load end");
+  }
+
+  save() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      print("save to $directory");
+      final file = File(directory.path + "/notes.txt");
+      file.openWrite();
+      for (var x in items) {
+        file.writeAsStringSync(x.toString() + '\n', mode: FileMode.append);
+      }
+    } catch (e) {
+      print("Error while saving the file: " + e.toString());
+    }
+  }
+
+  remove(item) {
+    items.remove(item);
+  }
+
+  add<T extends Note>() {
+    final factories = <Type, Function>{Memo: () => Memo(), Todo: () => Todo()};
+    final one = (factories[T]!)();
+    items.add(one);
+    return one;
+  }
+}
+
+////////////////////// Widgets
+class ItemPage extends StatefulWidget {
+  final _item, _levels;
+  const ItemPage(this._item, this._levels);
+  @override
+  _ItemPageState createState() => _ItemPageState(_item, _levels);
+}
+
+class _ItemPageState extends State<ItemPage> {
+  final Memo _item;
+  var _levels;
+  bool _check = false;
+  final cntTitle = TextEditingController();
+  final cntLevel = TextEditingController();
+  final cntDetails = TextEditingController();
+  _ItemPageState(this._item, this._levels) {
+    cntTitle.text = _item.title;
+    cntLevel.text = _item.level;
+    cntDetails.text = _item.details;
+    if (_item is Todo) _check = (_item as Todo).done;
+  }
+  @override
+  void dispose() {
+// Clean up the controller when the Widget is disposed
+    cntTitle.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  showDelDialog(context) {
+// set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Confirm"),
+      content: Text("Would you like to remove item?"),
+      actions: [
+        TextButton(
+          child: Text("Cancel"),
+          onPressed: () {
+            Navigator.pop(
+              context,
+            );
+          },
+        ),
+        TextButton(
+          child: Text("Yes"),
+          onPressed: () {
+            Navigator.pop(
+              context,
+            );
+            Navigator.pop(context, "del");
+          },
+        )
+      ],
+    );
+// show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('${_item.runtimeType}'),
+        actions: [
+          new IconButton(
+              icon: new Icon(Icons.done_outline_rounded),
+              onPressed: () {
+                Navigator.pop(context, _upd());
+              }),
+          new IconButton(
+              icon: new Icon(Icons.cancel),
+              onPressed: () => showDelDialog(context))
+        ],
+      ),
+      body: Center(
+        child: Column(
+          children: [
+            if (_item is Todo)
+              CheckboxListTile(
+                value: _check,
+                title: Text("Done"),
+                onChanged: (chk) {
+                  setState(() {
+                    _check = chk!;
+                  });
+                },
+              ),
+            TextField(
+              controller: cntTitle,
+              decoration: InputDecoration(labelText: 'Title'),
+            ),
+            ListTile(
+              trailing: PopupMenuButton(
+                  icon: const Icon(Icons.more_horiz_rounded),
+                  onSelected: (String newValue) {
+                    setState(() {
+                      cntLevel.text = newValue;
+                    });
+                  },
+                  itemBuilder: (context) => [
+                        for (String x in _levels)
+                          PopupMenuItem(
+                            value: x,
+                            child: Text(x),
+                          )
+                      ]),
+              title: TextField(
+                controller: cntLevel,
+                decoration: InputDecoration(labelText: 'Level'),
+              ),
+            ),
+            Expanded(
+                child: TextField(
+              controller: cntDetails,
+              decoration: InputDecoration(labelText: 'Details'),
+              minLines: 5,
+              maxLines: 10,
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  _upd() {
+    if (_item is Todo)
+      return Todo(
+          isDone: _check,
+          details: cntDetails.text,
+          title: cntTitle.text,
+          level: cntLevel.text);
+    if (_item is Memo)
+      return Memo(
+          details: cntDetails.text, title: cntTitle.text, level: cntLevel.text);
+  }
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  // This widget is the root of your application.
+// This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: HomePage(title: 'Simple notes'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
+class HomePage extends StatefulWidget {
+  HomePage({Key? key, this.title = ""}) : super(key: key);
   final String title;
-
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _HomePageState extends State<HomePage> {
+  var notes = Notes();
+  showItem(item) async {
+    final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) => ItemPage(item, notes.levels),
+        ));
+    if (result != null)
+      setState(() {
+        if (result == "del")
+          notes.remove(item);
+        else
+          item.update(result);
+      });
+  }
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  listItem(i, context) {
+    final one = notes.item(i);
+    if (one is Todo)
+      return ListTile(
+        leading: Icon(
+          Icons.done,
+          color: one.done ? Colors.lightGreen : Colors.white,
+        ),
+        title: Text(one.title),
+        subtitle: Text(one.level),
+        trailing: Text(one.dateCreate.toString().substring(0, 10)),
+        dense: true,
+        onTap: () => showItem(one),
+      );
+    if (one is Memo)
+      return ListTile(
+        title: Text(one.title),
+        subtitle: Text(one.level),
+        trailing: Text(one.dateCreate.toString().substring(0, 10)),
+        dense: true,
+        onTap: () => showItem(one),
+      );
+  }
+
+  _HomePageState();
+  @override
+  void initState() {
+    super.initState();
+    (notes.load()).whenComplete(() => setState(() {}));
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+        appBar: AppBar(
+          title: Text(widget.title),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+        body: ListView.separated(
+          separatorBuilder: (context, index) => const Divider(),
+          itemCount: notes.count,
+          itemBuilder: (context, i) => listItem(i, context),
+        ),
+        drawer: Drawer(
+            child: ListView(
+//itemExtent: 40.0,
+          children: [
+            DrawerHeader(
+              child: Text('Main menu'),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+            ),
+            ListTile(title: Text('LEVELS')),
+            for (var x in ["*", ...notes.levels])
+              ListTile(
+                title: Text(x),
+                contentPadding: EdgeInsets.only(left: 50),
+                dense: true,
+                selected: notes.filter == x,
+                onTap: () => setState(() {
+                  Navigator.pop(context);
+                  notes.setFilter(x);
+                }),
+              ),
+            Divider(),
+            ListTile(
+                title: Text('Save'),
+                leading: Icon(Icons.save_outlined),
+                onTap: () {
+                  notes.save();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Saved.'),
+                    ),
+                  );
+                  ;
+                }),
+            ListTile(
+                title: Text('Load'),
+                leading: Icon(Icons.file_upload),
+                onTap: () async {
+                  await notes.load();
+                  setState(() {});
+                }),
+            Divider(),
+            ListTile(title: Text('About...')),
+          ],
+        )),
+        floatingActionButton:
+            Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+          Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+            FloatingActionButton(
+              onPressed: () => showItem(notes.add<Memo>()),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(15.0))),
+              heroTag: 'memo',
+              tooltip: 'new memo item',
+              child: Text('+memo'),
+            ),
+            FloatingActionButton(
+              onPressed: () => showItem(notes.add<Todo>()),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(15.0))),
+              heroTag: 'todo',
+              tooltip: 'new todo item',
+              child: Text('+todo'),
+            )
+          ])
+        ]));
   }
+}
+
+///////////////////////
+void main() {
+  runApp(MyApp());
 }
