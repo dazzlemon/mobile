@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:developer';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 class Todo {
   DateTime dateCreate = DateTime.now();
@@ -90,45 +91,14 @@ class Notes {
   }
 }
 
-////////////////////// Widgets
-class ItemPage extends StatefulWidget {
-  final Todo _item;
+class ItemPage extends HookWidget {
+	final Todo _item;
 	final List<String> _levels;
+
   const ItemPage(this._item, this._levels, {Key? key}) : super(key: key);
-
-  @override
-  _ItemPageState createState() => _ItemPageState(_item, _levels);
-}
-
-class _ItemPageState extends State<ItemPage> {
-  final Todo _item;
-  final List<String> _levels;
-  final cntTitle = TextEditingController();
-  final cntLevel = TextEditingController();
-  final cntDetails = TextEditingController();
 	
-  bool _check = false;
-
-  _ItemPageState(this._item, this._levels) {
-    cntTitle.text = _item.title;
-    cntLevel.text = _item.level;
-    cntDetails.text = _item.details;
-    _check = _item.done;
-  }
-  @override
-  void dispose() {
-// Clean up the controller when the Widget is disposed
-    cntTitle.dispose();
-    super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
   showDelDialog(context) {
-// set up the AlertDialog
+		// set up the AlertDialog
     AlertDialog alert = AlertDialog(
       title: const Text("Confirm"),
       content: const Text("Would you like to remove item?"),
@@ -152,7 +122,7 @@ class _ItemPageState extends State<ItemPage> {
         )
       ],
     );
-// show the dialog
+		// show the dialog
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -163,6 +133,18 @@ class _ItemPageState extends State<ItemPage> {
 
   @override
   Widget build(BuildContext context) {
+		final cntTitle   = useTextEditingController(text: _item.title);
+		final cntLevel   = useTextEditingController(text: _item.level);
+		final cntDetails = useTextEditingController(text: _item.details);
+
+	  final _check = useState(false);
+
+		_upd() => Todo( done: _check.value
+			            , details: cntDetails.text
+								  , title: cntTitle.text
+								  , level: cntLevel.text
+								  );
+
     return Scaffold(
       appBar: AppBar(
         title: Text('${_item.runtimeType}'),
@@ -181,12 +163,10 @@ class _ItemPageState extends State<ItemPage> {
         child: Column(
           children: [
 						CheckboxListTile(
-							value: _check,
+							value: _check.value,
 							title: const Text("Done"),
 							onChanged: (chk) {
-								setState(() {
-									_check = chk!;
-								});
+								_check.value = chk!;
 							},
 						),
             TextField(
@@ -197,9 +177,7 @@ class _ItemPageState extends State<ItemPage> {
               trailing: PopupMenuButton(
                   icon: const Icon(Icons.more_horiz_rounded),
                   onSelected: (String newValue) {
-                    setState(() {
-                      cntLevel.text = newValue;
-                    });
+										cntLevel.text = newValue;
                   },
                   itemBuilder: (context) => [
                         for (String x in _levels)
@@ -225,14 +203,9 @@ class _ItemPageState extends State<ItemPage> {
       ),
     );
   }
-
-  _upd() => Todo( done: _check
-		            , details: cntDetails.text
-							  , title: cntTitle.text
-							  , level: cntLevel.text
-							  );
 }
 
+////////////////////// Widgets
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
