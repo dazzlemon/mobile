@@ -53,38 +53,58 @@ class Notes {
 
   bool _filter(x) => _curLevel == '*' || _curLevel == x.level;
 
-	todoFromXml(XmlNode x) => Todo( title:      x.getAttribute('title')!
-									              , done:       x.getAttribute('done')! == "true"
-															  , level:      x.getAttribute('level')!
-															  , details:    x.getAttribute('value')!
-                                , dateModify: DateTime.parse(
-															  	x.getAttribute('dateModify')!)
-                                , dateCreate: DateTime.parse(
-															  	x.getAttribute('dateCreate')!)
-															  );
+	todoFromXml(XmlNode x) {
+		logattr(XmlNode x, String attrName) =>
+			log('node[$attrName] = ' + x.getAttribute(attrName).toString());
+
+		log('node: ' + x.toXmlString());
+		logattr(x, 'title');
+		logattr(x, 'done');
+		logattr(x, 'level');
+		logattr(x, 'details');
+		logattr(x, 'dateCreate');
+		logattr(x, 'dateModify');
+		
+		return Todo( title:      x.getAttribute('title')!
+							 , done:       x.getAttribute('done')! == "true"
+							 , level:      x.getAttribute('level')!
+							 , details:    x.getAttribute('details')!
+							 , dateModify: DateTime.parse(
+							 	 x.getAttribute('dateModify')!)
+							 , dateCreate: DateTime.parse(
+							 	 x.getAttribute('dateCreate')!)
+							 );
+	} 
 
   load() async {
-    final directory = await getApplicationDocumentsDirectory();
-    log("load from $directory");
-    final file = File(directory.path + "/notes.txt");
-    items.clear();
+		try {
+	    final directory = await getApplicationDocumentsDirectory();
+	    log("load from $directory");
+	    final file = File(directory.path + "/todos.xml");
+	    items.clear();
 
-		XmlDocument.parse(file.readAsStringSync())
-		           .children
-							 // ignore: avoid_function_literals_in_foreach_calls
-							 .forEach((x) => items.add(todoFromXml(x)));
-    log("load end");
+			log("read: " + file.readAsStringSync());// TODO
+
+			XmlDocument.parse(file.readAsStringSync())
+			           .findAllElements('todo')
+								 // ignore: avoid_function_literals_in_foreach_calls
+								 .forEach((x) => items.add(todoFromXml(x)));
+	    log("load end");
+		} catch (e) {
+			log("Error while loading from file: " + e.toString());
+		}
   }
 
 	void Function(Todo) addTodoToXmlBuilder(XmlBuilder xmlBuilder) => (Todo x) =>
-		xmlBuilder..element('todo')
-							..attribute('title',      x.title)
-		          ..attribute('level',      x.level)
-		          ..attribute('done',       x.done)
-		          ..attribute('details',    x.details)
-		          ..attribute('dateModify', x.dateModify)
-							..attribute('dateCreate', x.dateCreate)
-							;
+		xmlBuilder..element('todo', nest: () {
+			xmlBuilder..attribute('title',      x.title)
+		            ..attribute('level',      x.level)
+		            ..attribute('done',       x.done)
+		            ..attribute('details',    x.details)
+		            ..attribute('dateModify', x.dateModify)
+							  ..attribute('dateCreate', x.dateCreate)
+							  ;
+		});
 
   save() async {
     try {
@@ -95,9 +115,9 @@ class Notes {
 
 			final directory = await getApplicationDocumentsDirectory();
       log("save to $directory");
-      final file = File(directory.path + "/notes.xml");
+      final file = File(directory.path + "/todos.xml");
       file..openWrite()
-			    ..writeAsString(xmlBuilder.buildDocument().text);
+			    ..writeAsString(xmlBuilder.buildDocument().toXmlString());
     } catch (e) {
       log("Error while saving the file: " + e.toString());
     }
@@ -339,8 +359,8 @@ class _HomePageState extends State<HomePage> {
             ListTile(
                 title: const Text('Save'),
                 leading: const Icon(Icons.save_outlined),
-                onTap: () {
-                  notes.save();
+                onTap: () async {
+                  await notes.save();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Saved.'),
