@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:developer';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:xml/xml.dart';
 
 class Todo {
   DateTime dateCreate = DateTime.now();
@@ -13,8 +14,16 @@ class Todo {
   bool done;
 
   Todo({
-		this.done = false, this.details = '', this.title = '', this.level = 'none'
-	});
+		this.done = false, this.details = '', this.title = '', this.level = 'none',
+		DateTime? dateCreate, DateTime? dateModify
+	}) {
+		if (dateCreate != null) {
+			this.dateCreate = dateCreate;
+		}
+		if (dateModify != null) {
+			this.dateModify = dateModify;
+		}
+	}
 
   update(other) {
 		this..title   = other.title
@@ -23,9 +32,6 @@ class Todo {
     	  ..details = other.details
         ..dateModify = DateTime.now();
   }
-
-  @override
-  toString() => "todo||$done||$title||$level||$details";
 }
 
 //Container
@@ -47,34 +53,51 @@ class Notes {
 
   bool _filter(x) => _curLevel == '*' || _curLevel == x.level;
 
+	todoFromXml(XmlNode x) => Todo( title:      x.getAttribute('title')!
+									              , done:       x.getAttribute('done')! == "true"
+															  , level:      x.getAttribute('level')!
+															  , details:    x.getAttribute('value')!
+                                , dateModify: DateTime.parse(
+															  	x.getAttribute('dateModify')!)
+                                , dateCreate: DateTime.parse(
+															  	x.getAttribute('dateCreate')!)
+															  );
+
   load() async {
-		//TODO load from file
     final directory = await getApplicationDocumentsDirectory();
     log("load from $directory");
     final file = File(directory.path + "/notes.txt");
     items.clear();
-    for (String x in file.readAsLinesSync()) {
-      log(x);
-      var s = x.split("||");
-      switch (s[0]) {
-        case "todo":
-          items.add(Todo(
-            done: s[1] == "true", title: s[2], level: s[3], details: s[4]));
-          break;
-      }
-    }
+
+		XmlDocument.parse(file.readAsStringSync())
+		           .children
+							 // ignore: avoid_function_literals_in_foreach_calls
+							 .forEach((x) => items.add(todoFromXml(x)));
     log("load end");
   }
 
+	void Function(Todo) addTodoToXmlBuilder(XmlBuilder xmlBuilder) => (Todo x) =>
+		xmlBuilder..element('todo')
+							..attribute('title',      x.title)
+		          ..attribute('level',      x.level)
+		          ..attribute('done',       x.done)
+		          ..attribute('details',    x.details)
+		          ..attribute('dateModify', x.dateModify)
+							..attribute('dateCreate', x.dateCreate)
+							;
+
   save() async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
+			final xmlBuilder = XmlBuilder();
+			xmlBuilder..processing('xml', 'version="1.0"')
+			          ..element('todos', nest: () =>
+									items.forEach(addTodoToXmlBuilder(xmlBuilder)));
+
+			final directory = await getApplicationDocumentsDirectory();
       log("save to $directory");
-      final file = File(directory.path + "/notes.txt");
-      file.openWrite();
-      for (var x in items) {
-        file.writeAsStringSync(x.toString() + '\n', mode: FileMode.append);
-      }
+      final file = File(directory.path + "/notes.xml");
+      file..openWrite()
+			    ..writeAsString(xmlBuilder.buildDocument().text);
     } catch (e) {
       log("Error while saving the file: " + e.toString());
     }
