@@ -83,7 +83,7 @@ class Notes {
 	    final file = File(directory.path + "/todos.xml");
 	    items.clear();
 
-			log("read: " + file.readAsStringSync());// TODO
+			log("read: " + file.readAsStringSync());
 
 			XmlDocument.parse(file.readAsStringSync())
 			           .findAllElements('todo')
