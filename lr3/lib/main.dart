@@ -43,13 +43,11 @@ class Notes {
 		Todo(done: true, details: 'string1 \n string2', title:'todo2'),
 	];
   var _curLevel = '*'; //filter value, * - all
-  get count => items.where(_filter).length;
-  get item => (int i) => items.where(_filter).toList()[i];
+  get count  => items.where(_filter).length;
+  get item   => (int i) => items.where(_filter).toList()[i];
   get levels => items.map((x) => x.level).toSet().toList();
   get filter => _curLevel == "" ? "*" : _curLevel;
-  setFilter(lev) {
-    _curLevel = lev;
-  }
+  setFilter(lev) => _curLevel = lev;
 
   bool _filter(x) => _curLevel == '*' || _curLevel == x.level;
 
@@ -96,15 +94,14 @@ class Notes {
   }
 
 	void Function(Todo) addTodoToXmlBuilder(XmlBuilder xmlBuilder) => (Todo x) =>
-		xmlBuilder..element('todo', nest: () {
+		xmlBuilder..element('todo', nest: () =>
 			xmlBuilder..attribute('title',      x.title)
 		            ..attribute('level',      x.level)
 		            ..attribute('done',       x.done)
 		            ..attribute('details',    x.details)
 		            ..attribute('dateModify', x.dateModify)
 							  ..attribute('dateCreate', x.dateCreate)
-							  ;
-		});
+		);
 
   save() async {
     try {
@@ -123,9 +120,7 @@ class Notes {
     }
   }
 
-  remove(item) {
-    items.remove(item);
-  }
+  remove(item) => items.remove(item);
 
   add() {
     final one = Todo();
@@ -248,7 +243,6 @@ class ItemPage extends HookWidget {
   }
 }
 
-////////////////////// Widgets
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -335,14 +329,7 @@ class _HomePageState extends State<HomePage> {
         ),
         drawer: Drawer(
             child: ListView(
-//itemExtent: 40.0,
           children: [
-            const DrawerHeader(
-              child: Text('Main menu'),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-            ),
             const ListTile(title: Text('LEVELS')),
             for (var x in ["*", ...notes.levels])
               ListTile(
@@ -374,8 +361,6 @@ class _HomePageState extends State<HomePage> {
                   await notes.load();
                   setState(() {});
                 }),
-            const Divider(),
-            const ListTile(title: Text('About...')),
           ],
         )),
         floatingActionButton:
@@ -394,7 +379,4 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-///////////////////////
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(const MyApp());
