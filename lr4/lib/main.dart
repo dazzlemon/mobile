@@ -186,10 +186,13 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  _displayChangeNameDialog() async {
-    final _textFieldController = TextEditingController();
-		_textFieldController.text = _currentUser;
-    var valueText = _currentUser;
+	_genericDialog(
+		String title, String confirm, String initText, Function onConfirm,
+		{InputDecoration inputDecoration = const InputDecoration()}
+	) async {
+		final _textFieldController = TextEditingController();
+		_textFieldController.text = initText;
+    var valueText = initText;
     showGeneralDialog(
         context: context,
         pageBuilder: (context, anim1, anim2) {},
@@ -202,7 +205,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Opacity(
               opacity: anim1.value,
               child: AlertDialog(
-                title: Text('Change name'),
+                title: Text(title),
                 content: TextField(
                   onChanged: (value) {
                     setState(() {
@@ -213,14 +216,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   minLines: null,
                   maxLines: null,
                   expands: true,
+                  decoration: inputDecoration
                 ),
                 actions: [
                   TextButton(
-                    child: Text('Confirm'),
-                    onPressed: () => setState(() {
-                      _currentUser = valueText;
-                      Navigator.pop(context);
-                    }),
+                    child: Text(confirm),
+                    onPressed: () => onConfirm(valueText),
                   ),
                 ],
               ),
@@ -230,48 +231,23 @@ class _MyHomePageState extends State<MyHomePage> {
         transitionDuration: Duration(milliseconds: 500));
   }
 
+  _displayChangeNameDialog() async {
+		_genericDialog('Change name', 'Confirm', _currentUser, (valueText) =>
+			setState(() {
+				_currentUser = valueText;
+				Navigator.pop(context);
+			}
+		));
+  }
+
   _displayDialog() async {
-    final _textFieldController = TextEditingController();
-    var valueText = '';
-    showGeneralDialog(
-        context: context,
-        pageBuilder: (context, anim1, anim2) {},
-        barrierDismissible: true,
-        barrierColor: Colors.black.withOpacity(0.4),
-        barrierLabel: '',
-        transitionBuilder: (context, anim1, anim2, child) {
-          return Transform.rotate(
-            angle: anim1.value * 360 * (3.1416 / 180.0),
-            child: Opacity(
-              opacity: anim1.value,
-              child: AlertDialog(
-                title: Text('New message'),
-                content: TextField(
-                  onChanged: (value) {
-                    setState(() {
-                      valueText = value;
-                    });
-                  },
-                  controller: _textFieldController,
-                  minLines: null,
-                  maxLines: null,
-                  expands: true,
-                  decoration: InputDecoration(hintText: "Text"),
-                ),
-                actions: [
-                  TextButton(
-                    child: Text('Send'),
-                    onPressed: () => setState(() {
-                      _newMess(valueText);
-                      Navigator.pop(context);
-                    }),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-        transitionDuration: Duration(milliseconds: 500));
+		_genericDialog('New message', 'Send', '', (valueText) =>
+			setState(() {
+				_newMess(valueText);
+				Navigator.pop(context);
+			}),
+			inputDecoration: InputDecoration(hintText: "Text")
+		);
   }
 
   //без анімації
