@@ -111,7 +111,13 @@ class _MyHomePageState extends State<MyHomePage> {
         ListTile(
           title: Text('Folders:'),
           selected: true,
-          trailing: IconButton(icon: Icon(Icons.add), onPressed: _newFolder),
+          trailing: IconButton(
+						icon: Icon(Icons.add),
+						onPressed: () => setState(() {
+              Navigator.pop(context);
+							_displayNewFolderDialog();
+						})
+					),
         ),
         for (var x in _folderList)
           ListTile(
@@ -250,26 +256,16 @@ class _MyHomePageState extends State<MyHomePage> {
 		);
   }
 
-  //без анімації
-  // _displayDialog() async {
-  //   final  _textFieldController=TextEditingController();
-  //   var valueText='';
-  //   return showDialog(
-  //       context: context,
-  //       builder: (context) {
-  //         return AlertDialog(
-  //           title: Text('New message'),
-  //           content: TextField(onChanged: (value) {setState(() {valueText = value;});},
-  //             controller: _textFieldController,
-  //             decoration: InputDecoration(hintText: "Text"),
-  //           ),
-  //           actions: [TextButton(child: Text('Send'),
-  //               onPressed: () {
-  //                 setState(() {
-  //                   _newMess(valueText);
-  //                   Navigator.pop(context);
-  //                 });},),],);});
-  // }
+	_displayNewFolderDialog() {
+		_genericDialog('New folder', 'Create', '', (valueText) =>
+			setState(() {
+				_newFolder(valueText);
+				Navigator.pop(context);
+			}),
+			inputDecoration: InputDecoration(hintText: 'Folder name')
+		);
+	}
+
 
   _newMess(text) async {
     CollectionReference fld = FirebaseFirestore.instance
@@ -289,11 +285,10 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  _newFolder() async {
+  _newFolder(String name) async {
     CollectionReference fld = FirebaseFirestore.instance.collection('folders');
-    //TODO вводити назву нової папки
     await fld
-        .doc('New folder')
+        .doc(name)
         .set({'creator': _currentUser, 'date': DateTime.now()});
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
