@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "/home/dazzlemon/github/mobile/lr4/build/firebase_core/intermediates/res/merged/release/drawable/notification_bg.xml",
+        "source": "/home/dazzlemon/.gradle/caches/transforms-2/files-2.1/82584f6614fc33e3de19f636b027bc03/core-1.6.0/res/drawable/notification_bg.xml"
+    },
+    {
+        "merged": "/home/dazzlemon/github/mobile/lr4/build/firebase_core/intermediates/res/merged/release/drawable/notification_bg_low.xml",
+        "source": "/home/dazzlemon/.gradle/caches/transforms-2/files-2.1/82584f6614fc33e3de19f636b027bc03/core-1.6.0/res/drawable/notification_bg_low.xml"
+    },
+    {
+        "merged": "/home/dazzlemon/github/mobile/lr4/build/firebase_core/intermediates/res/merged/release/drawable/notification_tile_bg.xml",
+        "source": "/home/dazzlemon/.gradle/caches/transforms-2/files-2.1/82584f6614fc33e3de19f636b027bc03/core-1.6.0/res/drawable/notification_tile_bg.xml"
+    },
+    {
+        "merged": "/home/dazzlemon/github/mobile/lr4/build/firebase_core/intermediates/res/merged/release/drawable/notification_icon_background.xml",
+        "source": "/home/dazzlemon/.gradle/caches/transforms-2/files-2.1/82584f6614fc33e3de19f636b027bc03/core-1.6.0/res/drawable/notification_icon_background.xml"
+    }
+]

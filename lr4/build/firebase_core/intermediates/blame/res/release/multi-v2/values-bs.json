@@ -1,0 +1,82 @@
+{
+    "logs": [
+        {
+            "outputFile": "/home/dazzlemon/github/mobile/lr4/build/firebase_core/intermediates/incremental/mergeReleaseResources/merged.dir/values-bs/values-bs.xml",
+            "map": [
+                {
+                    "source": "/home/dazzlemon/.gradle/caches/transforms-2/files-2.1/82584f6614fc33e3de19f636b027bc03/core-1.6.0/res/values-bs/values-bs.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    },
+                    "to": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "305",
+                        "endColumns": "100",
+                        "endOffsets": "401"
+                    }
+                },
+                {
+                    "source": "/home/dazzlemon/.gradle/caches/transforms-2/files-2.1/24baee351109c6a7b908d09f30c40222/jetified-play-services-basement-17.0.0/res/values-bs/values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "247",
+                        "endColumns": "199",
+                        "endOffsets": "446"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "105",
+                        "endColumns": "199",
+                        "endOffsets": "300"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "/home/dazzlemon/github/mobile/lr4/build/firebase_core/intermediates/res/merged/release/values-bs/values-bs.xml",
+            "map": [
+                {
+                    "source": "/home/dazzlemon/.gradle/caches/transforms-2/files-2.1/82584f6614fc33e3de19f636b027bc03/core-1.6.0/res/values-bs/values-bs.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    },
+                    "to": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "305",
+                        "endColumns": "100",
+                        "endOffsets": "401"
+                    }
+                },
+                {
+                    "source": "/home/dazzlemon/.gradle/caches/transforms-2/files-2.1/24baee351109c6a7b908d09f30c40222/jetified-play-services-basement-17.0.0/res/values-bs/values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "247",
+                        "endColumns": "199",
+                        "endOffsets": "446"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "105",
+                        "endColumns": "199",
+                        "endOffsets": "300"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,158 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.example.lr4"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="16"
+8-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml
+9        android:targetSdkVersion="30" />
+9-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:4:5-66
+11-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:4:22-64
+12    <!-- Although the *SdkVersion is captured in gradle build files, this is required for non gradle builds -->
+13    <!-- <uses-sdk android:minSdkVersion="14" /> -->
+14    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+14-->[com.google.firebase:firebase-firestore:22.0.1] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/c6a15a880441c337b0ccab79440e3b0d/jetified-firebase-firestore-22.0.1/AndroidManifest.xml:13:5-79
+14-->[com.google.firebase:firebase-firestore:22.0.1] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/c6a15a880441c337b0ccab79440e3b0d/jetified-firebase-firestore-22.0.1/AndroidManifest.xml:13:22-76
+15
+16    <application
+16-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:6:5-26:19
+17        android:name="androidx.multidex.MultiDexApplication"
+18        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+18-->[androidx.core:core:1.6.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/82584f6614fc33e3de19f636b027bc03/core-1.6.0/AndroidManifest.xml:24:18-86
+19        android:icon="@mipmap/ic_launcher"
+19-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:6:52-86
+20        android:label="firestore_example" >
+20-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:6:18-51
+21        <activity
+21-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:7:9-17:20
+22            android:name="io.flutter.embedding.android.FlutterActivity"
+22-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:7:19-78
+23            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection"
+23-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:10:19-112
+24            android:hardwareAccelerated="true"
+24-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:11:19-53
+25            android:launchMode="singleTop"
+25-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:8:19-49
+26            android:theme="@android:style/Theme.Black.NoTitleBar"
+26-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:9:19-72
+27            android:windowSoftInputMode="adjustResize" >
+27-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:12:19-61
+28            <intent-filter>
+28-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:13:13-16:29
+29                <action android:name="android.intent.action.MAIN" />
+29-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:14:17-68
+29-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:14:25-66
+30
+31                <category android:name="android.intent.category.LAUNCHER" />
+31-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:15:17-76
+31-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:15:27-74
+32            </intent-filter>
+33        </activity>
+34        <activity
+34-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:18:9-24:20
+35            android:name="com.example.lr4.EmbeddingV1Activity"
+35-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:19:13-48
+36            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale"
+36-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:21:13-116
+37            android:hardwareAccelerated="true"
+37-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:22:13-47
+38            android:theme="@android:style/Theme.Black.NoTitleBar"
+38-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:20:13-66
+39            android:windowSoftInputMode="adjustResize" >
+39-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:23:13-55
+40        </activity>
+41
+42        <meta-data
+42-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:25:9-71
+43            android:name="flutterEmbedding"
+43-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:25:20-51
+44            android:value="2" />
+44-->/home/dazzlemon/github/mobile/lr4/android/app/src/main/AndroidManifest.xml:25:52-69
+45
+46        <service
+46-->[:cloud_firestore] /home/dazzlemon/github/mobile/lr4/build/cloud_firestore/intermediates/library_manifest/release/AndroidManifest.xml:8:9-12:19
+47            android:name="com.google.firebase.components.ComponentDiscoveryService"
+47-->[:cloud_firestore] /home/dazzlemon/github/mobile/lr4/build/cloud_firestore/intermediates/library_manifest/release/AndroidManifest.xml:8:18-89
+48            android:directBootAware="true"
+48-->[com.google.firebase:firebase-common:19.5.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/aae09443eb9d56dd17a56c7b7bd8b4ea/jetified-firebase-common-19.5.0/AndroidManifest.xml:35:13-43
+49            android:exported="false" >
+49-->[com.google.firebase:firebase-firestore:22.0.1] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/c6a15a880441c337b0ccab79440e3b0d/jetified-firebase-firestore-22.0.1/AndroidManifest.xml:19:13-37
+50            <meta-data
+50-->[:cloud_firestore] /home/dazzlemon/github/mobile/lr4/build/cloud_firestore/intermediates/library_manifest/release/AndroidManifest.xml:9:13-11:85
+51                android:name="com.google.firebase.components:io.flutter.plugins.firebase.firestore.FlutterFirebaseFirestoreRegistrar"
+51-->[:cloud_firestore] /home/dazzlemon/github/mobile/lr4/build/cloud_firestore/intermediates/library_manifest/release/AndroidManifest.xml:10:17-134
+52                android:value="com.google.firebase.components.ComponentRegistrar" />
+52-->[:cloud_firestore] /home/dazzlemon/github/mobile/lr4/build/cloud_firestore/intermediates/library_manifest/release/AndroidManifest.xml:11:17-82
+53            <meta-data
+53-->[:firebase_core] /home/dazzlemon/github/mobile/lr4/build/firebase_core/intermediates/library_manifest/release/AndroidManifest.xml:9:13-11:85
+54                android:name="com.google.firebase.components:io.flutter.plugins.firebase.core.FlutterFirebaseCoreRegistrar"
+54-->[:firebase_core] /home/dazzlemon/github/mobile/lr4/build/firebase_core/intermediates/library_manifest/release/AndroidManifest.xml:10:17-124
+55                android:value="com.google.firebase.components.ComponentRegistrar" />
+55-->[:firebase_core] /home/dazzlemon/github/mobile/lr4/build/firebase_core/intermediates/library_manifest/release/AndroidManifest.xml:11:17-82
+56            <meta-data
+56-->[com.google.firebase:firebase-firestore:22.0.1] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/c6a15a880441c337b0ccab79440e3b0d/jetified-firebase-firestore-22.0.1/AndroidManifest.xml:20:13-22:85
+57                android:name="com.google.firebase.components:com.google.firebase.firestore.FirestoreRegistrar"
+57-->[com.google.firebase:firebase-firestore:22.0.1] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/c6a15a880441c337b0ccab79440e3b0d/jetified-firebase-firestore-22.0.1/AndroidManifest.xml:21:17-111
+58                android:value="com.google.firebase.components.ComponentRegistrar" />
+58-->[com.google.firebase:firebase-firestore:22.0.1] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/c6a15a880441c337b0ccab79440e3b0d/jetified-firebase-firestore-22.0.1/AndroidManifest.xml:22:17-82
+59            <!--
+60                This registrar is not defined in the dynamic-module-support sdk itself to allow non-firebase
+61                clients to use it as well, by defining this registrar in their own core/common library.
+62            -->
+63            <meta-data
+63-->[com.google.firebase:firebase-common:19.5.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/aae09443eb9d56dd17a56c7b7bd8b4ea/jetified-firebase-common-19.5.0/AndroidManifest.xml:43:13-45:85
+64                android:name="com.google.firebase.components:com.google.firebase.dynamicloading.DynamicLoadingRegistrar"
+64-->[com.google.firebase:firebase-common:19.5.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/aae09443eb9d56dd17a56c7b7bd8b4ea/jetified-firebase-common-19.5.0/AndroidManifest.xml:44:17-121
+65                android:value="com.google.firebase.components.ComponentRegistrar" />
+65-->[com.google.firebase:firebase-common:19.5.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/aae09443eb9d56dd17a56c7b7bd8b4ea/jetified-firebase-common-19.5.0/AndroidManifest.xml:45:17-82
+66        </service>
+67
+68        <activity
+68-->[com.google.android.gms:play-services-base:17.0.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/0a74fc1f6df277e68fbf8ad8c3fcc8e9/play-services-base-17.0.0/AndroidManifest.xml:23:9-26:75
+69            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+69-->[com.google.android.gms:play-services-base:17.0.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/0a74fc1f6df277e68fbf8ad8c3fcc8e9/play-services-base-17.0.0/AndroidManifest.xml:24:13-79
+70            android:exported="false"
+70-->[com.google.android.gms:play-services-base:17.0.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/0a74fc1f6df277e68fbf8ad8c3fcc8e9/play-services-base-17.0.0/AndroidManifest.xml:25:13-37
+71            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+71-->[com.google.android.gms:play-services-base:17.0.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/0a74fc1f6df277e68fbf8ad8c3fcc8e9/play-services-base-17.0.0/AndroidManifest.xml:26:13-72
+72
+73        <provider
+73-->[com.google.firebase:firebase-common:19.5.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/aae09443eb9d56dd17a56c7b7bd8b4ea/jetified-firebase-common-19.5.0/AndroidManifest.xml:26:9-31:39
+74            android:name="com.google.firebase.provider.FirebaseInitProvider"
+74-->[com.google.firebase:firebase-common:19.5.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/aae09443eb9d56dd17a56c7b7bd8b4ea/jetified-firebase-common-19.5.0/AndroidManifest.xml:27:13-77
+75            android:authorities="com.example.lr4.firebaseinitprovider"
+75-->[com.google.firebase:firebase-common:19.5.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/aae09443eb9d56dd17a56c7b7bd8b4ea/jetified-firebase-common-19.5.0/AndroidManifest.xml:28:13-72
+76            android:directBootAware="true"
+76-->[com.google.firebase:firebase-common:19.5.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/aae09443eb9d56dd17a56c7b7bd8b4ea/jetified-firebase-common-19.5.0/AndroidManifest.xml:29:13-43
+77            android:exported="false"
+77-->[com.google.firebase:firebase-common:19.5.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/aae09443eb9d56dd17a56c7b7bd8b4ea/jetified-firebase-common-19.5.0/AndroidManifest.xml:30:13-37
+78            android:initOrder="100" />
+78-->[com.google.firebase:firebase-common:19.5.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/aae09443eb9d56dd17a56c7b7bd8b4ea/jetified-firebase-common-19.5.0/AndroidManifest.xml:31:13-36
+79
+80        <meta-data
+80-->[com.google.android.gms:play-services-basement:17.0.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/24baee351109c6a7b908d09f30c40222/jetified-play-services-basement-17.0.0/AndroidManifest.xml:23:9-25:69
+81            android:name="com.google.android.gms.version"
+81-->[com.google.android.gms:play-services-basement:17.0.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/24baee351109c6a7b908d09f30c40222/jetified-play-services-basement-17.0.0/AndroidManifest.xml:24:13-58
+82            android:value="@integer/google_play_services_version" />
+82-->[com.google.android.gms:play-services-basement:17.0.0] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/24baee351109c6a7b908d09f30c40222/jetified-play-services-basement-17.0.0/AndroidManifest.xml:25:13-66
+83
+84        <uses-library
+84-->[androidx.window:window:1.0.0-beta04] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/0bcfef978118909c25255bd45d52f168/jetified-window-1.0.0-beta04/AndroidManifest.xml:25:9-27:40
+85            android:name="androidx.window.extensions"
+85-->[androidx.window:window:1.0.0-beta04] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/0bcfef978118909c25255bd45d52f168/jetified-window-1.0.0-beta04/AndroidManifest.xml:26:13-54
+86            android:required="false" />
+86-->[androidx.window:window:1.0.0-beta04] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/0bcfef978118909c25255bd45d52f168/jetified-window-1.0.0-beta04/AndroidManifest.xml:27:13-37
+87        <uses-library
+87-->[androidx.window:window:1.0.0-beta04] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/0bcfef978118909c25255bd45d52f168/jetified-window-1.0.0-beta04/AndroidManifest.xml:28:9-30:40
+88            android:name="androidx.window.sidecar"
+88-->[androidx.window:window:1.0.0-beta04] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/0bcfef978118909c25255bd45d52f168/jetified-window-1.0.0-beta04/AndroidManifest.xml:29:13-51
+89            android:required="false" />
+89-->[androidx.window:window:1.0.0-beta04] /home/dazzlemon/.gradle/caches/transforms-2/files-2.1/0bcfef978118909c25255bd45d52f168/jetified-window-1.0.0-beta04/AndroidManifest.xml:30:13-37
+90    </application>
+91
+92</manifest>
