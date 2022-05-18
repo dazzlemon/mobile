@@ -99,7 +99,13 @@ class _MyHomePageState extends State<MyHomePage> {
       drawer: Drawer(
           child: ListView(children: [
         DrawerHeader(
-          child: Text(_currentUser),
+          child: ListTile(
+						title: Text(_currentUser),
+						onTap: () => setState(() {
+              Navigator.pop(context);
+							_displayChangeNameDialog();
+						})
+					),
           decoration: BoxDecoration(color: Colors.blue),
         ),
         ListTile(
@@ -180,6 +186,50 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  _displayChangeNameDialog() async {
+    final _textFieldController = TextEditingController();
+		_textFieldController.text = _currentUser;
+    var valueText = _currentUser;
+    showGeneralDialog(
+        context: context,
+        pageBuilder: (context, anim1, anim2) {},
+        barrierDismissible: true,
+        barrierColor: Colors.black.withOpacity(0.4),
+        barrierLabel: '',
+        transitionBuilder: (context, anim1, anim2, child) {
+          return Transform.rotate(
+            angle: anim1.value * 360 * (3.1416 / 180.0),
+            child: Opacity(
+              opacity: anim1.value,
+              child: AlertDialog(
+                title: Text('Change name'),
+                content: TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      valueText = value;
+                    });
+                  },
+                  controller: _textFieldController,
+                  minLines: null,
+                  maxLines: null,
+                  expands: true,
+                ),
+                actions: [
+                  TextButton(
+                    child: Text('Confirm'),
+                    onPressed: () => setState(() {
+                      _currentUser = valueText;
+                      Navigator.pop(context);
+                    }),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+        transitionDuration: Duration(milliseconds: 500));
+  }
+
   _displayDialog() async {
     final _textFieldController = TextEditingController();
     var valueText = '';
@@ -251,7 +301,6 @@ class _MyHomePageState extends State<MyHomePage> {
         .doc(_currentFolder)
         .collection('items');
 
-    //TODO вводити ім'я користувача(_currentUser)
     await fld.add({'user': _currentUser, 'text': text, 'date': DateTime.now()});
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
