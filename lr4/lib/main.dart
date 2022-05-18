@@ -121,10 +121,15 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         for (var x in _folderList)
           ListTile(
-            title: Text(x),
+						title: Text(x.id),
+						subtitle: Text(x.data()['creator'] ?? ''),
+						trailing: Text(
+						  x.data()['date']?.toDate()?.toString() ?? '',
+						  textScaleFactor: 0.5,
+						),
             onTap: () => setState(() {
               Navigator.pop(context);
-              _currentFolder = x;
+              _currentFolder = x.id;
             }),
           ),
         ListTile(title: Text('Options:'), selected: true),
@@ -184,7 +189,10 @@ class _MyHomePageState extends State<MyHomePage> {
     var querySnapshot = await folders.get();
     querySnapshot.docs.forEach((doc) {
       print(doc.id);
-      res += [doc.id];
+			print(doc.data()['creator']);
+			print(doc.data()['date']?.toDate().toString());
+			print('');
+      res += [doc];
     });
 
     setState(() {
