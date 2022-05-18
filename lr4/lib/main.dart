@@ -16,11 +16,13 @@ class ThemeSettings with ChangeNotifier {
 
   light() => // ThemeData.light();
       ThemeData(
-          // Define the default brightness and colors.
-          brightness: Brightness.light,
-          primaryColor: Colors.lightBlue[800],
-          colorScheme:
-              ColorScheme.fromSwatch().copyWith(secondary: Colors.cyan[600]));
+				// Define the default brightness and colors.
+				brightness: Brightness.light,
+				primaryColor: Colors.lightBlue[800],
+				colorScheme: ColorScheme.fromSwatch().copyWith(
+					secondary: Colors.cyan[600]
+				)
+			);
 
   dark() {
     return ThemeData.dark();
@@ -93,16 +95,12 @@ class _MyHomePageState extends State<MyHomePage> {
           IconButton(icon: Icon(Icons.refresh), onPressed: _getFolderList)
         ],
       ),
-      body: Center(
-        child: _folderItems(),
-      ),
+      body: Center(child: _folderItems()),
       drawer: Drawer(
           child: ListView(children: [
         DrawerHeader(
           child: Text(_currentUser),
-          decoration: BoxDecoration(
-            color: Colors.blue,
-          ),
+          decoration: BoxDecoration(color: Colors.blue),
         ),
         ListTile(
           title: Text('Folders:'),
@@ -134,12 +132,12 @@ class _MyHomePageState extends State<MyHomePage> {
   _folderItems() {
     if (_currentFolder == "") return Text('Select folder');
 
-    //TODO відсортувати повідомлення за датою
-    CollectionReference msgs = FirebaseFirestore.instance
-        .collection('folders')
-        .doc(_currentFolder)
-        .collection('items');
-
+    Query msgs = FirebaseFirestore.instance.collection('folders')
+                                           .doc(_currentFolder)
+                                           .collection('items')
+																					 .orderBy('date')
+		                                       ;
+			
     return StreamBuilder(
       stream: msgs.snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
