@@ -1,37 +1,35 @@
-
 // @dart=2.9
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ThemeSettings with ChangeNotifier{
-  bool _dark=false;
-  get mode=>_dark?ThemeMode.dark:ThemeMode.light;
+class ThemeSettings with ChangeNotifier {
+  bool _dark = false;
+  get mode => _dark ? ThemeMode.dark : ThemeMode.light;
   get isDark => _dark;
 
-  swap(){
-    _dark=!_dark;
+  swap() {
+    _dark = !_dark;
     notifyListeners();
   }
-  light()=> // ThemeData.light();
-    ThemeData(
-			// Define the default brightness and colors.
-			brightness: Brightness.light,
-			primaryColor: Colors.lightBlue[800],
-			colorScheme: ColorScheme.fromSwatch().copyWith(
-				secondary: Colors.cyan[600]
-			)
-		);
 
-  dark(){
+  light() => // ThemeData.light();
+      ThemeData(
+          // Define the default brightness and colors.
+          brightness: Brightness.light,
+          primaryColor: Colors.lightBlue[800],
+          colorScheme:
+              ColorScheme.fromSwatch().copyWith(secondary: Colors.cyan[600]));
+
+  dark() {
     return ThemeData.dark();
   }
 }
 
-ThemeSettings curTheme=ThemeSettings(); //global
+ThemeSettings curTheme = ThemeSettings(); //global
 
-void main()=>runApp(MyApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatefulWidget {
   MyApp({Key key}) : super(key: key);
@@ -44,9 +42,11 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    curTheme.addListener(() {setState(() {
-      //update all
-    });});
+    curTheme.addListener(() {
+      setState(() {
+        //update all
+      });
+    });
   }
 
   @override
@@ -71,12 +71,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List _folderList=[];
-  var _currentFolder="";
-  var _currentUser='noName';
+  List _folderList = [];
+  var _currentFolder = "";
+  var _currentUser = 'noName';
 
   @override
-  _MyHomePageState(){
+  _MyHomePageState() {
     WidgetsFlutterBinding.ensureInitialized();
     Firebase.initializeApp().whenComplete(() {
       print("connected...");
@@ -87,47 +87,65 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(_currentFolder),
-          actions: [IconButton(icon:Icon(Icons.refresh), onPressed:_getFolderList)],
+      appBar: AppBar(
+        title: Text(_currentFolder),
+        actions: [
+          IconButton(icon: Icon(Icons.refresh), onPressed: _getFolderList)
+        ],
+      ),
+      body: Center(
+        child: _folderItems(),
+      ),
+      drawer: Drawer(
+          child: ListView(children: [
+        DrawerHeader(
+          child: Text(_currentUser),
+          decoration: BoxDecoration(
+            color: Colors.blue,
+          ),
         ),
-        body: Center(child:_folderItems(),),
-        drawer: Drawer(
-            child:ListView(
-                children: [
-                  DrawerHeader(child: Text(_currentUser), decoration: BoxDecoration(color: Colors.blue,),),
-                  ListTile( title: Text('Folders:'), selected: true,
-                    trailing:IconButton(icon:Icon(Icons.add), onPressed: _newFolder) ,),
-                  for(var x in _folderList) ListTile(title:Text(x),
-                    onTap:()=>  setState(() {
-                      Navigator.pop(context);
-                      _currentFolder=x;
-                    }),
-                  ),
-                  ListTile( title: Text('Options:'), selected: true),
-                  ListTile( title: Text('Dark theme:'),trailing: Switch(value: curTheme.isDark, onChanged:(x)=>curTheme.swap())),
-                ])
-        )
-      ,floatingActionButton: FloatingActionButton(
-          onPressed: _displayDialog,
-          tooltip: 'new message',
-          child: Icon(Icons.add),
+        ListTile(
+          title: Text('Folders:'),
+          selected: true,
+          trailing: IconButton(icon: Icon(Icons.add), onPressed: _newFolder),
+        ),
+        for (var x in _folderList)
+          ListTile(
+            title: Text(x),
+            onTap: () => setState(() {
+              Navigator.pop(context);
+              _currentFolder = x;
+            }),
+          ),
+        ListTile(title: Text('Options:'), selected: true),
+        ListTile(
+            title: Text('Dark theme:'),
+            trailing: Switch(
+                value: curTheme.isDark, onChanged: (x) => curTheme.swap())),
+      ])),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _displayDialog,
+        tooltip: 'new message',
+        child: Icon(Icons.add),
       ),
     );
-
   }
 
   _folderItems() {
     if (_currentFolder == "") return Text('Select folder');
 
     //TODO відсортувати повідомлення за датою
-    CollectionReference msgs = FirebaseFirestore.instance.collection('folders').doc(_currentFolder).collection('items');
+    CollectionReference msgs = FirebaseFirestore.instance
+        .collection('folders')
+        .doc(_currentFolder)
+        .collection('items');
 
     return StreamBuilder(
       stream: msgs.snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) return Text('Something went wrong');
-        if (snapshot.connectionState == ConnectionState.waiting) return Text("Loading");
+        if (snapshot.connectionState == ConnectionState.waiting)
+          return Text("Loading");
 
         print('items $_currentFolder');
         return ListView(
@@ -136,7 +154,10 @@ class _MyHomePageState extends State<MyHomePage> {
             return ListTile(
               title: Text(document.data()['text']),
               subtitle: Text(document.data()['user']),
-              trailing: Text(document.data()['date'].toDate().toString() ?? '',textScaleFactor: 0.5, ),
+              trailing: Text(
+                document.data()['date'].toDate().toString() ?? '',
+                textScaleFactor: 0.5,
+              ),
             );
           }).toList(),
         );
@@ -145,24 +166,25 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _getFolderList() async {
-      var res=[];
+    var res = [];
 
-      print('folders:');
-      CollectionReference folders = FirebaseFirestore.instance.collection('folders');
-      var querySnapshot= await folders.get();
-      querySnapshot.docs.forEach((doc) {
-            print(doc.id);
-            res+=[doc.id];
-          });
+    print('folders:');
+    CollectionReference folders =
+        FirebaseFirestore.instance.collection('folders');
+    var querySnapshot = await folders.get();
+    querySnapshot.docs.forEach((doc) {
+      print(doc.id);
+      res += [doc.id];
+    });
 
-      setState(() {
-        _folderList=res;
-      });
+    setState(() {
+      _folderList = res;
+    });
   }
 
   _displayDialog() async {
-    final  _textFieldController=TextEditingController();
-    var valueText='';
+    final _textFieldController = TextEditingController();
+    var valueText = '';
     showGeneralDialog(
         context: context,
         pageBuilder: (context, anim1, anim2) {},
@@ -171,22 +193,35 @@ class _MyHomePageState extends State<MyHomePage> {
         barrierLabel: '',
         transitionBuilder: (context, anim1, anim2, child) {
           return Transform.rotate(
-            angle: anim1.value*360 * (3.1416/180.0),
-            child: Opacity(opacity: anim1.value,
+            angle: anim1.value * 360 * (3.1416 / 180.0),
+            child: Opacity(
+              opacity: anim1.value,
               child: AlertDialog(
-                  title: Text('New message'),
-                  content: TextField(onChanged: (value) {setState(() {valueText = value;});},
-                    controller: _textFieldController,
-                    minLines: null, maxLines: null, expands: true,
-                    decoration: InputDecoration(hintText: "Text"),
+                title: Text('New message'),
+                content: TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      valueText = value;
+                    });
+                  },
+                  controller: _textFieldController,
+                  minLines: null,
+                  maxLines: null,
+                  expands: true,
+                  decoration: InputDecoration(hintText: "Text"),
+                ),
+                actions: [
+                  TextButton(
+                    child: Text('Send'),
+                    onPressed: () => setState(() {
+                      _newMess(valueText);
+                      Navigator.pop(context);
+                    }),
                   ),
-                  actions: [TextButton(child: Text('Send'),
-                      onPressed: () =>
-                        setState(() {
-                          _newMess(valueText);
-                          Navigator.pop(context);
-                        }),
-                    ),],),),);
+                ],
+              ),
+            ),
+          );
         },
         transitionDuration: Duration(milliseconds: 500));
   }
@@ -212,34 +247,37 @@ class _MyHomePageState extends State<MyHomePage> {
   //                 });},),],);});
   // }
 
-
-  _newMess(text) async{
-    CollectionReference fld = FirebaseFirestore.instance.collection('folders').doc(_currentFolder).collection('items');
+  _newMess(text) async {
+    CollectionReference fld = FirebaseFirestore.instance
+        .collection('folders')
+        .doc(_currentFolder)
+        .collection('items');
 
     //TODO вводити ім'я користувача(_currentUser)
-    await fld.add({
-        'user': _currentUser,
-        'text': text,
-        'date': DateTime.now()
-      });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('message sent'),),);
+    await fld.add({'user': _currentUser, 'text': text, 'date': DateTime.now()});
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('message sent'),
+      ),
+    );
 
-      setState(() {
-        //update
-      });
-    }
+    setState(() {
+      //update
+    });
+  }
 
-  _newFolder() async{
+  _newFolder() async {
     CollectionReference fld = FirebaseFirestore.instance.collection('folders');
     //TODO вводити назву нової папки
-    await fld.doc('New folder').set(
-        { 'creator': _currentUser,
-          'date': DateTime.now()
-        });
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('new folder'),),);
+    await fld
+        .doc('New folder')
+        .set({'creator': _currentUser, 'date': DateTime.now()});
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('new folder'),
+      ),
+    );
 
     _getFolderList();
   }
-
 }
-
