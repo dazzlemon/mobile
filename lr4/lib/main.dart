@@ -16,10 +16,13 @@ class ThemeSettings with ChangeNotifier{
   }
   light()=> // ThemeData.light();
     ThemeData(
-        // Define the default brightness and colors.
-        brightness: Brightness.light,
-        primaryColor: Colors.lightBlue[800],
-        accentColor: Colors.cyan[600]);
+			// Define the default brightness and colors.
+			brightness: Brightness.light,
+			primaryColor: Colors.lightBlue[800],
+			colorScheme: ColorScheme.fromSwatch().copyWith(
+				secondary: Colors.cyan[600]
+			)
+		);
 
   dark(){
     return ThemeData.dark();

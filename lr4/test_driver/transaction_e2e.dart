@@ -4,7 +4,6 @@
 
 // @dart=2.9
 
-import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
