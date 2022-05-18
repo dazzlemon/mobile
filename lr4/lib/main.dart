@@ -141,7 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Query msgs = FirebaseFirestore.instance.collection('folders')
                                            .doc(_currentFolder)
                                            .collection('items')
-																					 .orderBy('date')
+																					 .orderBy('date', descending: true)
 		                                       ;
 			
     return StreamBuilder(
